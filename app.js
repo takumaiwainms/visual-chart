@@ -27,42 +27,42 @@ function sample(){
  return {id:uid(),sample:true,label:'サンプル症例 A',initials:'K.M.',sex:'M',age:'68',height:'168',weight:'61',side:'左',primary:'Rs',stage:'IVb',surgery:'HAR',surgeryNote:'',
   ras:'野生型',rasDetail:'',braf:'野生型',her2:'陰性',msi:'MSS/pMMR',ugt:'野生型',other:['なし'],cgp:'未実施',cgpNote:'',ps:'0',comorb:['HT'],
   metLiver:true,metLung:true,metPerit:false,metOtherOn:false,metOther:[],
-  startDate:'2025-04-07',deathDate:'',lastFU:'',
+  status:'治療中',nCourses:25,
   intro:'job トラック運転手。',
-  issues:'皮膚障害で抗EGFR抗体の休薬が続く場合、仕事との両立を考えて投与スケジュールをどう調整するか',
-  lessons:'導入時から予防的スキンケアを徹底し、皮膚障害を早めに拾う',
+  issues:'',
+  lessons:'',
   cells,dose,
   lines:[
-   {id:uid(),line:'1',name:'FOLFOX + Pmab',drugs:'5-FU + L-OHP + Pmab',c1:'1',c2:'12',dose:'',reason:'PD',start:'2025-04-07',end:'2025-09-22',note:'12コース目からL-OHP中止(末梢神経障害)'},
-   {id:uid(),line:'2',name:'FOLFIRI + Bmab',c1:'13',c2:'20',dose:'',reason:'PD',start:'2025-10-06',end:'2026-01-26',note:''},
-   {id:uid(),line:'3',name:'TAS-102 + Bmab',c1:'21',c2:'24',dose:'',reason:'',start:'2026-02-09',end:'',note:''}],
+   {id:uid(),line:'1',name:'FOLFOX + Pmab',drugs:'5-FU + L-OHP + Pmab',c1:'1',c2:'12',dose:'',reason:'PD',note:''},
+   {id:uid(),line:'2',name:'FOLFIRI + Bmab',c1:'13',c2:'20',dose:'',reason:'PD',note:''},
+   {id:uid(),line:'3',name:'TAS-102 + Bmab',c1:'21',c2:'24',dose:'',reason:'',note:''}],
   events:[
-   {id:uid(),course:'1',date:'',type:'PS',text:'',tone:'good'},
-   {id:uid(),course:'5',date:'',type:'PS',text:'皮疹',tone:'stable'},
-   {id:uid(),course:'11',date:'',type:'PS',text:'しびれ',tone:'stable'},
-   {id:uid(),course:'15',date:'',type:'PS',text:'',tone:'good'},
-   {id:uid(),course:'20',date:'',type:'PS',text:'倦怠感',tone:'bad'},
-   {id:uid(),course:'4',date:'',type:'CT',text:'肝・肺 縮小 PR',tone:'good'},
-   {id:uid(),course:'4',date:'',type:'TM',text:'CEA↓',tone:'good'},
-   {id:uid(),course:'8',date:'',type:'CT',text:'PR維持',tone:'good'},
-   {id:uid(),course:'12',date:'',type:'CT',text:'肝 増大 PD',tone:'bad'},
-   {id:uid(),course:'12',date:'',type:'TM',text:'CEA↑',tone:'bad'},
-   {id:uid(),course:'16',date:'',type:'CT',text:'SD',tone:'stable'},
-   {id:uid(),course:'20',date:'',type:'CT',text:'肺 新規 PD',tone:'bad'},
-   {id:uid(),course:'5',date:'',type:'AE',text:'ざ瘡様皮疹 G2',tone:'bad'},
-   {id:uid(),course:'8',date:'',type:'AE',text:'爪囲炎・低Mg',tone:'bad'},
-   {id:uid(),course:'11',date:'',type:'AE',text:'末梢神経障害 G2',tone:'bad'},
-   {id:uid(),course:'15',date:'',type:'AEH',text:'好中球減少 G3',tone:'bad'},
-   {id:uid(),course:'5',date:'',type:'RX',text:'MINO・保湿剤',tone:''},
-   {id:uid(),course:'8',date:'',type:'RX',text:'Mg補充',tone:''}]};
+   {id:uid(),course:'1',type:'PS',text:'',tone:'good'},
+   {id:uid(),course:'5',type:'PS',text:'',tone:'stable'},
+   {id:uid(),course:'11',type:'PS',text:'',tone:'stable'},
+   {id:uid(),course:'15',type:'PS',text:'',tone:'good'},
+   {id:uid(),course:'20',type:'PS',text:'',tone:'bad'},
+   {id:uid(),course:'4',type:'CT',text:'',tone:'good'},
+   {id:uid(),course:'4',type:'TM',text:'',tone:'good'},
+   {id:uid(),course:'8',type:'CT',text:'',tone:'good'},
+   {id:uid(),course:'12',type:'CT',text:'',tone:'bad'},
+   {id:uid(),course:'12',type:'TM',text:'',tone:'bad'},
+   {id:uid(),course:'16',type:'CT',text:'',tone:'stable'},
+   {id:uid(),course:'20',type:'CT',text:'',tone:'bad'},
+   {id:uid(),course:'5',type:'AE',text:'',tone:'bad'},
+   {id:uid(),course:'8',type:'AE',text:'',tone:'bad'},
+   {id:uid(),course:'11',type:'AE',text:'',tone:'bad'},
+   {id:uid(),course:'15',type:'AEH',text:'',tone:'bad'},
+   {id:uid(),course:'5',type:'RX',text:'',tone:''},
+   {id:uid(),course:'8',type:'RX',text:'',tone:''}]};
 }
-function blank(){return {id:uid(),label:'新規症例',initials:'',sex:'',age:'',height:'',weight:'',side:'',primary:'',stage:'',surgery:'',ras:'',rasDetail:'',braf:'',her2:'',msi:'',ugt:'',other:'',cgp:'',ps:'',comorb:'',metLiver:false,metLung:false,metPerit:false,metOtherOn:false,metOther:'',startDate:'',deathDate:'',lastFU:'',intro:'',issues:'',lessons:'',cells:{},dose:{},lines:[],events:[]}}
+function blank(){return {id:uid(),label:'新規症例',initials:'',sex:'',age:'',height:'',weight:'',side:'',primary:'',stage:'',surgery:'',ras:'',rasDetail:'',braf:'',her2:'',msi:'',ugt:'',other:'',cgp:'',ps:'',comorb:'',metLiver:false,metLung:false,metPerit:false,metOtherOn:false,metOther:'',status:'',nCourses:25,intro:'',issues:'',lessons:'',cells:{},dose:{},lines:[],events:[]}}
 
 let db={patients:[],cur:null,brush:'cBlue'};
 try{const s=localStorage.getItem(KEY); if(s) db=JSON.parse(s);}catch(e){}
 if(!db.patients||!db.patients.length){const s=sample(); db={patients:[s],cur:s.id,brush:'cBlue'};}
 db.patients=db.patients.map(p=>p.sample?Object.assign(sample(),{id:p.id}):p);
-db.patients.forEach(p=>{if(p.metBone&&p.metOtherOn===undefined)p.metOtherOn=true;delete p.metBone;p.cells=p.cells||{};p.dose=p.dose||{};p.lines=p.lines||[];p.events=p.events||[];});
+db.patients.forEach(p=>{if(!p.status&&p.deathDate)p.status='死亡';if(!p.nCourses)p.nCourses=25;if(p.metBone&&p.metOtherOn===undefined)p.metOtherOn=true;delete p.metBone;p.cells=p.cells||{};p.dose=p.dose||{};p.lines=p.lines||[];p.events=p.events||[];});
 let saveT;
 function save(){const c=db.patients.find(p=>p.id===db.cur);if(c)c.upd=Date.now();clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(db));}catch(e){}},250);}
 const cur=()=>db.patients.find(p=>p.id===db.cur)||db.patients[0];
@@ -79,7 +79,7 @@ function hay(p){return norm([p.label,p.initials,p.primary,p.side,p.stage,p.surge
  arr(p.comorb).join(' '),arr(p.other).join(' '),arr(p.metOther).join(' '),
  ...(p.lines||[]).map(l=>[l.name,l.drugs,l.note,l.reason].join(' ')),...(p.events||[]).map(e=>e.text)].join(' '));}
 const FILTERS={right:p=>p.side==='右',left:p=>p.side==='左',rasMut:p=>p.ras==='変異',rasWt:p=>p.ras==='野生型',
- dead:p=>!!p.deathDate,active:p=>!p.deathDate&&(p.lines||[]).some(l=>+l.c1&&!l.end&&!l.reason),
+ dead:p=>p.status==='死亡',active:p=>p.status==='治療中',
  liver:p=>!!p.metLiver,lung:p=>!!p.metLung,perit:p=>!!p.metPerit};
 const ui={q:'',f:new Set(),sort:'new'};
 try{const u=JSON.parse(sessionStorage.getItem('vcUI')||'{}');ui.q=u.q||'';ui.f=new Set(u.f||[]);ui.sort=u.sort||'new';}catch(_){}
@@ -88,11 +88,12 @@ function renderList(){
  const terms=norm(ui.q).split(/\s+/).filter(Boolean);
  let list=db.patients.filter(p=>{if(terms.length){const h=hay(p);if(!terms.every(t=>h.includes(t)))return false;}
   for(const f of ui.f){ if(!FILTERS[f](p)) return false; } return true;});
- const key={new:(a,b)=>(b.startDate||'').localeCompare(a.startDate||''),old:(a,b)=>(a.startDate||'9').localeCompare(b.startDate||'9'),
+ const idx=new Map(db.patients.map((p,i)=>[p.id,i]));
+ const key={new:(a,b)=>idx.get(b.id)-idx.get(a.id),old:(a,b)=>idx.get(a.id)-idx.get(b.id),
   label:(a,b)=>String(a.label||'').localeCompare(String(b.label||''),'ja',{numeric:true}),upd:(a,b)=>(b.upd||0)-(a.upd||0)}[ui.sort];
  list.sort(key);
  document.getElementById('pcount').textContent=`${list.length} / ${db.patients.length} 例`;
- el.innerHTML=list.map(p=>`<button data-id="${p.id}" aria-current="${p.id===cur().id}"><span class="pl-main"><span>${esc(p.label||'(無題)')}${p.initials?` <small>${esc(p.initials)}</small>`:''}</span><small class="pl-sub">${esc([p.primary,p.stage,(p.lines||[]).filter(l=>l.line).length?`${(p.lines||[]).filter(l=>l.line).length}L`:''].filter(Boolean).join(' ・ '))}</small></span><small>${esc((p.startDate||'').slice(0,7))}</small></button>`).join('')
+ el.innerHTML=list.map(p=>`<button data-id="${p.id}" aria-current="${p.id===cur().id}"><span class="pl-main"><span>${esc(p.label||'(無題)')}${p.initials?` <small>${esc(p.initials)}</small>`:''}</span><small class="pl-sub">${esc([p.primary,p.stage,(p.lines||[]).filter(l=>l.line).length?`${(p.lines||[]).filter(l=>l.line).length}L`:''].filter(Boolean).join(' ・ '))}</small></span><small>${esc(p.status||'')}</small></button>`).join('')
   || `<p class="hint" style="padding:8px">該当する症例がありません</p>`;
  el.querySelectorAll('button').forEach(b=>b.onclick=()=>{db.cur=b.dataset.id;save();renderAll();});
 }
@@ -111,6 +112,7 @@ function bindFinder(){
 /* ---------- main ---------- */
 const PRIMARY=['C','A','T','D','S','Rs','Ra','Rb'];
 const SIDE_OF={C:'右',A:'右',T:'右',D:'左',S:'左',Rs:'左',Ra:'左',Rb:'左'};
+const STATUS=['治療中','休薬・経過観察','BSC','死亡','転院・終了'];
 const SURG=['未切除','RHC','横行結腸切除','LHC','S状結腸切除','HAR','LAR','ISR','APR','ハルトマン','人工肛門のみ','ステント'];
 const COMORB=['なし','DM','HT','心疾患','腎障害','肝障害','COPD','脳血管障害','認知症'];
 const OTHERSITES=['骨','脳','遠隔LN','副腎','卵巣','皮膚','その他'];
@@ -133,7 +135,7 @@ function renderMain(){
  <div class="head">
    <h2>${esc(p.label||'(無題)')}</h2>
    <div class="tools noprint">
-     <span class="meta">${p.sample?'サンプルデータ ・ ':''}化療導入 ${esc(p.startDate||'未入力')}</span>
+     <span class="meta">${p.sample?'サンプルデータ ・ ':''}${esc(p.status||'状況未入力')}</span>
      <button class="btn sm primary" id="shareBtn">相談用に共有</button>
      <button class="btn sm" id="printBtn">印刷</button>
      <span id="delWrap"><button class="btn sm danger" id="delBtn">症例削除</button></span>
@@ -152,6 +154,7 @@ function renderMain(){
  </div></section>
 
  <section class="panel"><div class="paneltop"><h3>治療経過</h3>
+   <span class="ctools noprint"><button class="btn sm" id="cMinus" title="末尾の空いた5コースを減らす">−5コース</button><span class="num" id="cNum"></span><button class="btn sm" id="cPlus">＋5コース</button></span>
    <div class="brushbar noprint" role="group" aria-label="塗る色">
      <span class="hint">色を選んでマスをタップ・なぞる</span>
      ${COLORS.map(([c,l])=>`<button data-brush="${c}" style="background:var(--${c})" aria-pressed="${db.brush===c}" aria-label="${l}" title="${l}"></button>`).join('')}
@@ -179,7 +182,7 @@ function renderMain(){
    ${chips('comorb','併存疾患(複数可)',COMORB,p,{multi:true,cls:'full'})}
    ${field('intro','初診時特記事項',p,'text',null,'full')}
   </div></section>
-  <section class="panel"><h3>バイオマーカー・日付</h3><div class="grid">
+  <section class="panel"><h3>バイオマーカー・現在の状況</h3><div class="grid">
    ${chips('ras','RAS',['野生型','変異','未検'],p,{cls:'wide'})}
    ${chips('rasDetail','RAS 変異型',['G12C','G12D','G12V','G13D','その他'],p,{cls:'wide'})}
    ${chips('braf','BRAF',['野生型','V600E','non-V600E','未検'],p,{cls:'wide'})}
@@ -189,20 +192,18 @@ function renderMain(){
    ${chips('other','その他の遺伝子異常(複数可)',['なし','NTRK融合','RET融合','TMB-high','POLE'],p,{multi:true,cls:'full'})}
    ${chips('cgp','CGP',['未実施','実施済'],p)}
    ${field('cgpNote','CGP 結果メモ(任意)',p,'text',null,'wide')}
-   ${field('startDate','化学療法導入日',p,'date')}
-   ${field('lastFU','最終生存確認日',p,'date')}
-   ${field('deathDate','死亡日',p,'date')}
+   ${chips('status','現在の状況',STATUS,p,{cls:'full'})}
   </div></section>
  </div>
 
  <section class="panel"><h3>評価・イベントの詳細</h3>
-  <div class="scroll"><table id="evT" style="min-width:720px"><thead><tr><th>コース</th><th>日付(任意)</th><th>種別</th><th>内容</th><th>表情</th><th></th></tr></thead><tbody></tbody></table></div>
+  <div class="scroll"><table id="evT" style="min-width:720px"><thead><tr><th>コース</th><th>種別</th><th>内容</th><th>表情</th><th></th></tr></thead><tbody></tbody></table></div>
   <div class="tools noprint" style="margin-top:8px"><button class="btn sm" id="addE">＋ 追加</button></div>
  </section>
 
  <section class="panel"><h3>治療ライン(任意・研究用)</h3>
   <p class="hint" style="margin:0 0 6px">ライン番号と範囲を入れると、チャート上部に帯で表示されます。薬剤はチャートのマスから自動で集計します。</p>
-  <div class="scroll"><table id="lnT" style="min-width:1180px"><thead><tr><th>ライン</th><th>名称</th><th>コース</th><th>使用薬剤(空欄=自動)</th><th>平均用量%(自動)</th><th>中止理由</th><th>開始日</th><th>終了日</th><th>メモ</th><th></th></tr></thead><tbody></tbody></table></div>
+  <div class="scroll"><table id="lnT" style="min-width:900px"><thead><tr><th>ライン</th><th>名称</th><th>コース</th><th>使用薬剤(空欄=自動)</th><th>平均用量%(自動)</th><th>中止理由</th><th>メモ</th><th></th></tr></thead><tbody></tbody></table></div>
   <div class="tools noprint" style="margin-top:8px"><button class="btn sm" id="addL">＋ ライン追加</button></div>
  </section>
 
@@ -216,7 +217,6 @@ function renderMain(){
   if(['height','weight'].includes(el.dataset.k)) document.getElementById('bsaOut').textContent=bsa(p)||'—';
   if(el.dataset.k==='label'){m.querySelector('.head h2').textContent=el.value||'(無題)';renderList();}
   if(el.dataset.k==='initials') renderList();
-  if(el.dataset.k==='startDate') renderList();
   if(['side','primary','ras','rasDetail','braf','her2','msi'].includes(el.dataset.k)) visual();
   save();
  }));
@@ -230,6 +230,7 @@ function renderMain(){
   if(k==='metOther'){p.metOtherOn=arr(p.metOther).length>0;m.querySelector('[data-met=metOtherOn]').setAttribute('aria-pressed',p.metOtherOn);}
   if(['side','primary','ras','rasDetail','braf','her2','msi'].includes(k)) visual();
   delete p.sample; save();
+  if(['status','side','ras','primary','stage'].includes(k)) renderList();
  });
  m.querySelectorAll('[data-met]').forEach(b=>{b.setAttribute('aria-pressed',!!p[b.dataset.met]);b.onclick=()=>{p[b.dataset.met]=!p[b.dataset.met];b.setAttribute('aria-pressed',p[b.dataset.met]);delete p.sample;save();};});
  m.querySelectorAll('[data-brush]').forEach(b=>b.onclick=()=>{db.brush=b.dataset.brush;save();m.querySelectorAll('[data-brush]').forEach(x=>x.setAttribute('aria-pressed',x===b));});
@@ -247,8 +248,10 @@ function renderMain(){
    db.cur=db.patients[0].id; save(); renderAll();
   };
  };
- document.getElementById('addL').onclick=()=>{p.lines.push({id:uid(),line:String(p.lines.filter(l=>l.line).length+1),name:'',c1:String(maxCourse(p)+1),c2:'',dose:'100',reason:'',start:'',end:'',note:''});save();renderLines();drawTL();};
- document.getElementById('addE').onclick=()=>{p.events.push({id:uid(),course:'',date:'',type:'CT',text:'',tone:''});save();renderEv();};
+ document.getElementById('cPlus').onclick=()=>{p.nCourses=Math.max(+p.nCourses||25,Math.ceil(maxCourse(p)/5)*5)+5;delete p.sample;save();drawTL();};
+ document.getElementById('cMinus').onclick=()=>{const n=Math.max(+p.nCourses||25,Math.ceil(maxCourse(p)/5)*5)-5; if(n>=Math.max(5,maxCourse(p))){p.nCourses=n;save();drawTL();}};
+ document.getElementById('addL').onclick=()=>{p.lines.push({id:uid(),line:String(p.lines.filter(l=>l.line).length+1),name:'',c1:String(maxCourse(p)+1),c2:'',dose:'100',reason:'',note:''});save();renderLines();drawTL();};
+ document.getElementById('addE').onclick=()=>{p.events.push({id:uid(),course:String(maxCourse(p)||1),type:'CT',text:'',tone:''});save();renderEv();};
  renderLines(); renderEv(); drawTL();
 }
 
@@ -261,11 +264,9 @@ function renderLines(){
   <td style="min-width:170px"><input class="auto" data-l="drugs" value="${esc(l.drugs||'')}" placeholder="${esc(lanesOf(p,l.c1,l.c2).join(' + ')||'—')}" aria-label="使用薬剤" title="空欄なら塗ったマスから自動表示。Pmab・Cmabなど自由に書き換え可"></td>
   <td class="autod num" style="width:72px;color:var(--muted)">${l.c1?lineDose(p,l.c1,l.c2)||'—':'—'}</td>
   <td style="min-width:130px"><select data-l="reason" aria-label="中止理由">${REASONS.map(o=>`<option ${o===l.reason?'selected':''}>${o}</option>`).join('')}</select></td>
-  <td><input type="date" data-l="start" value="${esc(l.start)}" aria-label="開始日"></td>
-  <td><input type="date" data-l="end" value="${esc(l.end)}" aria-label="終了日"></td>
   <td style="min-width:140px"><textarea data-l="note" aria-label="メモ">${esc(l.note)}</textarea></td>
   <td><button class="btn sm danger" data-del aria-label="削除">×</button></td></tr>`).join('')
-  || `<tr><td colspan="10" class="empty">入力は任意です。ライン番号・中止理由を残すと研究用CSVに出力されます。</td></tr>`;
+  || `<tr><td colspan="8" class="empty">入力は任意です。ライン番号・中止理由を残すと研究用CSVに出力されます。</td></tr>`;
  tb.querySelectorAll('tr[data-id]').forEach(tr=>{
   const l=p.lines.find(x=>x.id===tr.dataset.id);
   tr.querySelectorAll('[data-l]').forEach(el=>el.addEventListener('input',()=>{l[el.dataset.l]=el.value;delete p.sample;save();drawTL();
@@ -278,12 +279,11 @@ function renderEv(){
  const list=[...p.events].sort((a,b)=>(+a.course||999)-(+b.course||999));
  tb.innerHTML=list.map(e=>`<tr data-id="${e.id}">
   <td style="width:60px"><input class="num" data-e="course" value="${esc(e.course||'')}" aria-label="コース"></td>
-  <td style="width:150px"><input type="date" data-e="date" value="${esc(e.date)}" aria-label="日付"></td>
   <td style="width:150px"><select data-e="type" aria-label="種別">${EVT.map(([k,l])=>`<option value="${k}" ${k===e.type?'selected':''}>${l}</option>`).join('')}</select></td>
   <td><input data-e="text" value="${esc(e.text)}" placeholder="例 肝↓ PR / CEA↑ / 手指裂創 G2" aria-label="内容"></td>
   <td style="width:120px;white-space:nowrap">${(e.type==='CT'?[['good','奏効'],['stable','不変'],['bad','増悪']]:[['good','良い'],['stable','ふつう'],['bad','悪い']]).map(([t,l])=>`<button class="facebtn" data-tone="${t}" aria-pressed="${e.tone===t}" aria-label="${l}" title="${l}"><svg width="22" height="22" viewBox="-11 -11 22 22">${face(t,0,0,9)}</svg></button>`).join('')}</td>
   <td><button class="btn sm danger" data-del aria-label="削除">×</button></td></tr>`).join('')
-  || `<tr><td colspan="6" class="empty">チャートでタップした顔はここに並びます。内容の文字や有害事象・投薬はここで追加します。</td></tr>`;
+  || `<tr><td colspan="5" class="empty">チャートでタップした顔はここに並びます。内容の文字や有害事象・投薬はここで追加します。</td></tr>`;
  tb.querySelectorAll('tr[data-id]').forEach(tr=>{
   const e=p.events.find(x=>x.id===tr.dataset.id);
   tr.querySelectorAll('[data-tone]').forEach(b=>b.onclick=()=>{e.tone=e.tone===b.dataset.tone?'':b.dataset.tone;delete p.sample;save();tr.querySelectorAll('[data-tone]').forEach(x=>x.setAttribute('aria-pressed',e.tone===x.dataset.tone));drawTL();});
@@ -318,12 +318,23 @@ function face(t,cx,cy,r){
 /* ---------- chart ---------- */
 function drawTL(){
  const p=cur(), box=document.getElementById('tl'); if(!box) return;
- const N=Math.max(25,maxCourse(p)+3), LW=104, unit=Math.max(28,Math.min(40,900/N));
+ const N=Math.max(+p.nCourses||25,Math.ceil(maxCourse(p)/5)*5), LW=104, unit=Math.max(28,Math.min(40,900/N));
  const xOf=c=>LW+c*unit; // c: 0始まりの左端
  const LH=24, BAND=22, top=22, gTop=top+BAND+4;
  const evTop=gTop+LANES.length*LH+16, EH=40;
  const evRows=ROWS.filter(([k])=>TAP.includes(k)||p.events.some(e=>rowOf(e.type)===k&&+e.course));
- const H=evTop+evRows.length*EH+8, W=LW+N*unit+12;
+ const tW=t=>[...String(t)].reduce((w,ch)=>w+(ch.charCodeAt(0)>255?11:6.6),0);
+ /* 文字の配置:アイコンの右に置けるなら右、次のアイコンにかかるならアイコンの下に段を作って置く */
+ const layouts=evRows.map(([k])=>{
+  const items=p.events.filter(e=>rowOf(e.type)===k&&+e.course).sort((a,b)=>a.course-b.course).map(e=>({e,x:xOf(+e.course-.5)}));
+  const ends=[];
+  items.forEach((it,i)=>{ if(!it.e.text){it.lv=-1;return;} const w=tW(it.e.text), ex=it.x+12+w;
+   const hit=items.some((o,j)=>j>i&&o.x-12<ex);
+   if(!hit){it.lv=0;it.tx=it.x+12;return;}
+   let L=0; while(ends[L]!==undefined&&ends[L]>it.x-10) L++; ends[L]=it.x-10+w+6; it.lv=L+1; it.tx=it.x-10;});
+  return {items,h:Math.max(EH,26+ends.length*14+6)};});
+ const rowY=[]; let acc=evTop; layouts.forEach(l=>{rowY.push(acc);acc+=l.h;});
+ const H=acc+8, W=LW+N*unit+12;
  let s=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="治療経過チャート" id="chartSvg">`;
  for(let c=1;c<=N;c++) if(c===1||c%5===0) s+=`<text x="${xOf(c-1)+unit/2}" y="${top-8}" font-size="10" text-anchor="middle" fill="var(--muted)" class="num">${c}</text>`;
  // ライン帯
@@ -343,23 +354,21 @@ function drawTL(){
  });
  for(let c=5;c<=N;c+=5) s+=`<line x1="${xOf(c)}" y1="${gTop}" x2="${xOf(c)}" y2="${H-4}" stroke="var(--muted)" stroke-width=".8" opacity=".5"/>`;
  // 評価・イベント
- evRows.forEach(([k,l],i)=>{const y=evTop+i*EH;
-  s+=`<line x1="0" y1="${y+EH-2}" x2="${W}" y2="${y+EH-2}" stroke="var(--soft)"/>`;
+ evRows.forEach(([k,l],i)=>{const y=rowY[i], RH=layouts[i].h;
+  s+=`<line x1="0" y1="${y+RH-2}" x2="${W}" y2="${y+RH-2}" stroke="var(--soft)"/>`;
   s+=`<text x="8" y="${y+16}" font-size="12" font-weight="700" fill="var(--ink)">${l}</text>`;
-  if(TAP.includes(k)) for(let c=1;c<=N;c++) s+=`<rect class="tap" data-k="${k}" data-c="${c}" x="${xOf(c-1)}" y="${y}" width="${unit}" height="${EH-4}" fill="transparent"><title>${c}コース目</title></rect>`;
-  const evs=p.events.filter(e=>rowOf(e.type)===k&&+e.course).sort((a,b)=>a.course-b.course);
-  let endTop=-1e9, endBot=-1e9, alt=0;
-  evs.forEach(e=>{const x=xOf(+e.course-.5);
-   const tw=e.text?(12+[...e.text].reduce((w,ch)=>w+(ch.charCodeAt(0)>255?11:6.5),0)):12;
-   if(x-10>=endTop){alt=0;endTop=x+tw;} else if(x-10>=endBot){alt=1;endBot=x+tw;} else {alt=endTop<=endBot?0:1; if(alt)endBot=x+tw; else endTop=x+tw;}
+  if(TAP.includes(k)) for(let c=1;c<=N;c++) s+=`<rect class="tap" data-k="${k}" data-c="${c}" x="${xOf(c-1)}" y="${y}" width="${unit}" height="${RH-4}" fill="transparent"><title>${c}コース目</title></rect>`;
+  layouts[i].items.forEach(({e,x,lv,tx})=>{
    const c=e.tone==='good'?'var(--good)':e.tone==='bad'?'var(--bad)':'var(--muted)';
    if(k==='RX') s+=`<g transform="translate(${x},${y+11}) rotate(-35)"><rect x="-9" y="-4" width="18" height="8" rx="4" fill="#f7f0dc" stroke="#111" stroke-width="1.2"/><path d="M0 -4 h5 a4 4 0 0 1 0 8 h-5 z" fill="#3a7bd5" stroke="#111" stroke-width="1.2"/></g>`;
    else if(k==='AE') s+=`<image href="${e.type==='AEH'?ICON.rx:ICON.ae}" x="${x-11}" y="${y}" width="22" height="24" preserveAspectRatio="xMidYMid meet"/>`;
    else s+=face(e.tone,x,y+11,9);
-   if(e.text) s+=`<text x="${x+12}" y="${y+(alt?33:15)}" font-size="11" fill="${c}">${esc(e.text)}</text>`;});
+   if(lv>=0) s+=`<text x="${tx}" y="${lv===0?y+15:y+24+lv*14}" font-size="11" fill="${c}">${esc(e.text)}</text>`;});
  });
  s+='</svg>'; box.innerHTML=s;
  bindChart(p);
+ const cn=document.getElementById('cNum'); if(cn) cn.textContent=N+'コース';
+ const mi=document.getElementById('cMinus'); if(mi) mi.disabled=N-5<Math.max(5,maxCourse(p));
 }
 /* 用量%ポップオーバー */
 function openDose(p,k,c){
@@ -440,13 +449,11 @@ const stamp=()=>new Date().toISOString().slice(0,10);
 document.getElementById('expJson').onclick=()=>tryDownload(`visual-chart_${stamp()}.json`,JSON.stringify(db,null,1),'application/json');
 document.getElementById('expCsv').onclick=()=>{
  const q=v=>`"${String(v??'').replace(/"/g,'""')}"`;
- const head=['label','sex','ageAtStart','side','primary','surgery','stage','ras','rasDetail','braf','her2','msi','ugt','ps','metLiver','metLung','metPeritoneum','metOtherFlag','metOtherSite','startDate','deathDate','lastFU','line','name','courseStart','courseEnd','courses','drugs','meanDosePct','reason','start','end','days','note'];
+ const head=['label','sex','ageAtStart','side','primary','surgery','stage','ras','rasDetail','braf','her2','msi','ugt','ps','metLiver','metLung','metPeritoneum','metOtherFlag','metOtherSite','status','line','name','courseStart','courseEnd','courses','drugs','meanDosePct','reason','note'];
  const rows=[head.join(',')];
- const D=s=>s?new Date(s+'T00:00:00'):null;
  db.patients.forEach(p=>(p.lines.length?p.lines:[{}]).forEach(l=>{
-  const days=(D(l.start)&&D(l.end))?Math.round((D(l.end)-D(l.start))/864e5):'';
   const n=(+l.c1&&+l.c2)?(+l.c2-+l.c1+1):'';
-  rows.push([p.label,p.sex,p.age,p.side,p.primary,p.surgery,p.stage,p.ras,p.rasDetail,p.braf,p.her2,p.msi,p.ugt,p.ps,p.metLiver?1:0,p.metLung?1:0,p.metPerit?1:0,(p.metOtherOn||p.metBone)?1:0,arr(p.metOther).join('・'),p.startDate,p.deathDate,p.lastFU,l.line,l.name,l.c1,l.c2,n,l.drugs||(l.c1?lanesOf(p,l.c1,l.c2).join('+'):''),l.c1?lineDose(p,l.c1,l.c2):'',l.reason,l.start,l.end,days,l.note].map(q).join(','));}));
+  rows.push([p.label,p.sex,p.age,p.side,p.primary,p.surgery,p.stage,p.ras,p.rasDetail,p.braf,p.her2,p.msi,p.ugt,p.ps,p.metLiver?1:0,p.metLung?1:0,p.metPerit?1:0,(p.metOtherOn||p.metBone)?1:0,arr(p.metOther).join('・'),p.status,l.line,l.name,l.c1,l.c2,n,l.drugs||(l.c1?lanesOf(p,l.c1,l.c2).join('+'):''),l.c1?lineDose(p,l.c1,l.c2):'',l.reason,l.note].map(q).join(','));}));
  tryDownload(`visual-chart-lines_${stamp()}.csv`,'﻿'+rows.join('\n'),'text/csv');
 };
 const fileIn=document.getElementById('fileIn');

@@ -132,6 +132,8 @@ rect.tap:hover{fill:var(--accent);fill-opacity:.12}
 .seg button{all:unset;cursor:pointer;padding:2px 10px;font-size:12px}
 .seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
 .paneltop{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.ctools{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.btn:disabled{opacity:.4;cursor:default}
 .paneltop h3{margin:0;font-size:12px;letter-spacing:.12em;color:var(--muted)}
 .brand{all:unset;cursor:pointer;display:flex;gap:10px;align-items:center;border-radius:8px}
 .brand img{width:40px;height:40px;object-fit:contain}
@@ -188,7 +190,7 @@ rect.cell:hover{stroke:var(--ink);stroke-width:1.2}
 <div class="splash" id="shareDlg" hidden role="dialog" aria-modal="true" aria-labelledby="shareTitle">
   <div class="splash-card share-card">
     <div class="share-h"><h2 id="shareTitle">この症例を相談用に共有</h2><button class="btn sm" id="shareClose">閉じる</button></div>
-    <label class="dp-c"><input type="checkbox" id="anonChk" checked> イニシャル・日付を外す(匿名化)</label>
+    <label class="dp-c"><input type="checkbox" id="anonChk" checked> イニシャルを外す(匿名化)</label>
     <div class="share-sec">
       <h3>1. 画像で送る(メール・チャット向け)</h3>
       <p class="hint">チャートを1枚の画像にします。相手はアプリ不要で見られます。</p>
@@ -230,7 +232,7 @@ rect.cell:hover{stroke:var(--ink);stroke-width:1.2}
         <button type="button" class="fchip" data-f="liver">肝</button><button type="button" class="fchip" data-f="lung">肺</button><button type="button" class="fchip" data-f="perit">腹膜</button>
       </div>
       <div class="frow"><span id="pcount" class="num"></span>
-        <select id="psort" aria-label="並び順"><option value="new">導入日 新しい順</option><option value="old">導入日 古い順</option><option value="label">ラベル順</option><option value="upd">最近編集した順</option></select></div>
+        <select id="psort" aria-label="並び順"><option value="new">追加が新しい順</option><option value="old">追加が古い順</option><option value="label">ラベル順</option><option value="upd">最近編集した順</option></select></div>
     </div>
     <div class="plist" id="plist"></div>
     <div class="tools noprint">
