@@ -47,7 +47,16 @@ aside{background:var(--paper);border-right:1px solid var(--line);padding:16px;di
 aside h1{font-size:16px;margin:0;letter-spacing:.04em}
 aside .sub{font-size:11px;color:var(--muted);margin-top:-8px}
 .plist{display:flex;flex-direction:column;gap:2px;overflow:auto;flex:1}
-.plist button{all:unset;cursor:pointer;padding:8px 10px;border-radius:6px;display:flex;justify-content:space-between;gap:8px}
+.plist button{all:unset;cursor:pointer;padding:7px 10px;border-radius:6px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.pl-main{display:flex;flex-direction:column;min-width:0}
+.pl-sub{font-size:11px;opacity:.7}
+.finder{display:flex;flex-direction:column;gap:6px}
+.finder input[type=search]{border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:7px 9px;width:100%;font-size:14px}
+.fchips{display:flex;flex-wrap:wrap;gap:4px}
+.fchip{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:3px 9px;min-height:28px;font-size:12px;cursor:pointer;touch-action:manipulation}
+.fchip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.frow{display:flex;justify-content:space-between;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.frow select{border:1px solid var(--line);background:var(--bg);border-radius:5px;padding:3px 4px;font-size:12px}
 .plist button:hover{background:var(--soft)}
 .plist button[aria-current="true"]{background:var(--accent);color:var(--accent-ink)}
 .plist small{opacity:.75;font-family:var(--num);font-size:11px}
@@ -211,6 +220,17 @@ rect.cell:hover{stroke:var(--ink);stroke-width:1.2}
     <button class="brand" id="aboutBtn" aria-label="このアプリについて"><img id="brandMark" alt=""><span><b>VISUAL CHART</b><small>大腸癌化学療法 ・ Web版</small></span></button>
     <div class="tools">
       <button class="btn primary" id="addP">＋ 症例追加</button>
+    </div>
+    <div class="finder">
+      <input type="search" id="q" placeholder="検索(ラベル・薬剤・メモなど)" aria-label="症例を検索" autocomplete="off">
+      <div class="fchips" role="group" aria-label="絞り込み">
+        <button type="button" class="fchip" data-f="right">右</button><button type="button" class="fchip" data-f="left">左</button>
+        <button type="button" class="fchip" data-f="rasMut">RAS変異</button><button type="button" class="fchip" data-f="rasWt">RAS野生</button>
+        <button type="button" class="fchip" data-f="active">治療中</button><button type="button" class="fchip" data-f="dead">死亡</button>
+        <button type="button" class="fchip" data-f="liver">肝</button><button type="button" class="fchip" data-f="lung">肺</button><button type="button" class="fchip" data-f="perit">腹膜</button>
+      </div>
+      <div class="frow"><span id="pcount" class="num"></span>
+        <select id="psort" aria-label="並び順"><option value="new">導入日 新しい順</option><option value="old">導入日 古い順</option><option value="label">ラベル順</option><option value="upd">最近編集した順</option></select></div>
     </div>
     <div class="plist" id="plist"></div>
     <div class="tools noprint">

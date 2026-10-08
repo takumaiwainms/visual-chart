@@ -64,7 +64,7 @@ if(!db.patients||!db.patients.length){const s=sample(); db={patients:[s],cur:s.i
 db.patients=db.patients.map(p=>p.sample?Object.assign(sample(),{id:p.id}):p);
 db.patients.forEach(p=>{if(p.metBone&&p.metOtherOn===undefined)p.metOtherOn=true;delete p.metBone;p.cells=p.cells||{};p.dose=p.dose||{};p.lines=p.lines||[];p.events=p.events||[];});
 let saveT;
-function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(db));}catch(e){}},250);}
+function save(){const c=db.patients.find(p=>p.id===db.cur);if(c)c.upd=Date.now();clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(db));}catch(e){}},250);}
 const cur=()=>db.patients.find(p=>p.id===db.cur)||db.patients[0];
 function bsa(p){const h=+p.height,w=+p.weight; if(!h||!w) return ''; return (0.007184*Math.pow(h,0.725)*Math.pow(w,0.425)).toFixed(2);}
 function maxCourse(p){let m=0;
@@ -74,10 +74,38 @@ function lineDose(p,c1,c2){let sum=0,n=0;LANES.forEach(([k])=>{const o=p.cells[k
 function lanesOf(p,c1,c2){return LANES.filter(([k])=>{const o=p.cells[k]||{};for(let c=+c1;c<=+(c2||c1);c++) if(o[c]) return true;return false;}).map(x=>x[1]);}
 
 /* ---------- list ---------- */
+const norm=t=>String(t??'').normalize('NFKC').toLowerCase();
+function hay(p){return norm([p.label,p.initials,p.primary,p.side,p.stage,p.surgery,p.surgeryNote,p.intro,p.issues,p.lessons,p.ras,p.rasDetail,p.braf,p.her2,p.msi,p.cgpNote,
+ arr(p.comorb).join(' '),arr(p.other).join(' '),arr(p.metOther).join(' '),
+ ...(p.lines||[]).map(l=>[l.name,l.drugs,l.note,l.reason].join(' ')),...(p.events||[]).map(e=>e.text)].join(' '));}
+const FILTERS={right:p=>p.side==='右',left:p=>p.side==='左',rasMut:p=>p.ras==='変異',rasWt:p=>p.ras==='野生型',
+ dead:p=>!!p.deathDate,active:p=>!p.deathDate&&(p.lines||[]).some(l=>+l.c1&&!l.end&&!l.reason),
+ liver:p=>!!p.metLiver,lung:p=>!!p.metLung,perit:p=>!!p.metPerit};
+const ui={q:'',f:new Set(),sort:'new'};
+try{const u=JSON.parse(sessionStorage.getItem('vcUI')||'{}');ui.q=u.q||'';ui.f=new Set(u.f||[]);ui.sort=u.sort||'new';}catch(_){}
 function renderList(){
  const el=document.getElementById('plist');
- el.innerHTML=db.patients.map(p=>`<button data-id="${p.id}" aria-current="${p.id===cur().id}"><span>${esc(p.label||'(無題)')}${p.initials?` <small>${esc(p.initials)}</small>`:''}</span><small>${esc((p.startDate||'').slice(0,7))}</small></button>`).join('');
+ const terms=norm(ui.q).split(/\s+/).filter(Boolean);
+ let list=db.patients.filter(p=>{if(terms.length){const h=hay(p);if(!terms.every(t=>h.includes(t)))return false;}
+  for(const f of ui.f){ if(!FILTERS[f](p)) return false; } return true;});
+ const key={new:(a,b)=>(b.startDate||'').localeCompare(a.startDate||''),old:(a,b)=>(a.startDate||'9').localeCompare(b.startDate||'9'),
+  label:(a,b)=>String(a.label||'').localeCompare(String(b.label||''),'ja',{numeric:true}),upd:(a,b)=>(b.upd||0)-(a.upd||0)}[ui.sort];
+ list.sort(key);
+ document.getElementById('pcount').textContent=`${list.length} / ${db.patients.length} 例`;
+ el.innerHTML=list.map(p=>`<button data-id="${p.id}" aria-current="${p.id===cur().id}"><span class="pl-main"><span>${esc(p.label||'(無題)')}${p.initials?` <small>${esc(p.initials)}</small>`:''}</span><small class="pl-sub">${esc([p.primary,p.stage,(p.lines||[]).filter(l=>l.line).length?`${(p.lines||[]).filter(l=>l.line).length}L`:''].filter(Boolean).join(' ・ '))}</small></span><small>${esc((p.startDate||'').slice(0,7))}</small></button>`).join('')
+  || `<p class="hint" style="padding:8px">該当する症例がありません</p>`;
  el.querySelectorAll('button').forEach(b=>b.onclick=()=>{db.cur=b.dataset.id;save();renderAll();});
+}
+function bindFinder(){
+ const q=document.getElementById('q'), so=document.getElementById('psort');
+ const keep=()=>{try{sessionStorage.setItem('vcUI',JSON.stringify({q:ui.q,f:[...ui.f],sort:ui.sort}));}catch(_){}};
+ q.value=ui.q; so.value=ui.sort;
+ q.addEventListener('input',()=>{ui.q=q.value;keep();renderList();});
+ so.onchange=()=>{ui.sort=so.value;keep();renderList();};
+ document.querySelectorAll('[data-f]').forEach(b=>{b.setAttribute('aria-pressed',ui.f.has(b.dataset.f));
+  b.onclick=()=>{const f=b.dataset.f; if(ui.f.has(f))ui.f.delete(f); else{ui.f.add(f);
+    const pair={right:'left',left:'right',rasMut:'rasWt',rasWt:'rasMut',active:'dead',dead:'active'}[f]; if(pair&&ui.f.has(pair)){ui.f.delete(pair);document.querySelector(`[data-f="${pair}"]`).setAttribute('aria-pressed','false');}}
+   b.setAttribute('aria-pressed',ui.f.has(f)); keep(); renderList();};});
 }
 
 /* ---------- main ---------- */
@@ -528,6 +556,7 @@ document.getElementById('installBtn').onclick=async()=>{if(!deferredPrompt)retur
 })();
 
 function renderAll(){renderList();renderMain();}
+bindFinder();
 renderAll();
 document.getElementById('brandMark').src=BRAND.mark;
 document.getElementById('splashImg').src=BRAND.card;
