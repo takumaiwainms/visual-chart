@@ -138,7 +138,8 @@ rect.tap:hover{fill:var(--accent);fill-opacity:.12}
 .credits em{font-size:11px;color:var(--muted);text-decoration:underline;letter-spacing:.06em}
 .credits span{font-size:12px}
 .credits b{font-size:16px}
-.splash-note{font-size:11px;color:var(--muted);margin:0}
+.splash-note{font-size:11px;color:var(--muted);margin:0;text-align:center;line-height:1.7;padding-inline:16px}
+.splash-note a{color:var(--accent)}
 @media (max-width:480px){.credits{grid-template-columns:1fr}}
 .brushbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .brushbar .hint{font-size:11px;color:var(--muted);margin-right:4px}
@@ -198,10 +199,10 @@ rect.cell:hover{stroke:var(--ink);stroke-width:1.2}
     <img id="splashImg" alt="大腸癌化学療法 VISUAL CHART 抗癌剤による治療経過・副作用などを視覚的に捉える!">
     <h2 id="splashTitle" class="sr">大腸癌化学療法 VISUAL CHART</h2>
     <div class="credits">
-      <div><em>PRESENTS</em><span>日本医科大学 消化器外科 病院講師</span><b>岩井 拓磨</b></div>
+      <div><em>企画・開発</em><span>日本医科大学 消化器外科 病院講師</span><b>岩井 拓磨</b></div>
       <div><em>アドバイザー</em><span>聖マリアンナ医科大学 腫瘍内科 教授</span><b>砂川 優</b></div>
     </div>
-    <p class="splash-note">データはこの端末のブラウザ内にのみ保存されます。<br>本アプリは治療経過の記録・可視化を目的としたもので、診断や投与量の決定には使用しないでください。</p>
+    <p class="splash-note">ご意見・不具合のご報告:<a href="https://github.com/takumaiwainms/visual-chart/issues" target="_blank" rel="noopener">GitHub(visual-chart/issues)</a><br>データはこの端末のブラウザ内にのみ保存されます。<br>本アプリは治療経過の記録・可視化を目的としたもので、診断や投与量の決定には使用しないでください。</p>
     <button class="btn primary" id="splashGo">はじめる</button>
   </div>
 </div>

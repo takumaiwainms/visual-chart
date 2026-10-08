@@ -18,44 +18,51 @@ const rowOf=t=>t==='AEH'?'AE':t;
 
 function fill(cells,lane,from,to,col,skip=[]){cells[lane]=cells[lane]||{};for(let c=from;c<=to;c++) if(!skip.includes(c)) cells[lane][c]=col;}
 function sample(){
+ /* 架空の症例(実在の患者とは無関係) */
  const cells={};
- fill(cells,'5FU',1,12,'cBlue'); fill(cells,'OX',1,12,'cBlue'); fill(cells,'EGFR',1,12,'cBlue',[9,10]);
- fill(cells,'5FU',13,19,'cGreen'); fill(cells,'IRI',13,19,'cGreen'); fill(cells,'EGFR',13,19,'cGreen');
- const dose={IRI:{},'5FU':{}}; for(let c=16;c<=19;c++){dose.IRI[c]=80;dose['5FU'][c]=80;}
- return {id:uid(),sample:true,label:'サンプル症例 A',initials:'H.S.',sex:'F',age:'75',height:'150',weight:'40',side:'右',primary:'A',stage:'IVb',surgery:'RHC',surgeryNote:'',
-  ras:'野生型',rasDetail:'',braf:'野生型',her2:'未検',msi:'MSS/pMMR',ugt:'',other:[],cgp:'未実施',cgpNote:'',ps:'1',comorb:['なし'],
-  metLiver:true,metLung:true,metPerit:false,metOtherOn:false,metOther:'',
-  startDate:'2018-04-01',deathDate:'2019-07-15',lastFU:'',
+ fill(cells,'5FU',1,12,'cBlue'); fill(cells,'OX',1,11,'cBlue'); fill(cells,'EGFR',1,12,'cBlue',[7,8]);
+ fill(cells,'5FU',13,20,'cGreen'); fill(cells,'IRI',13,20,'cGreen'); fill(cells,'VEGF',13,20,'cGreen');
+ fill(cells,'TAS',21,24,'cOrange'); fill(cells,'VEGF',21,24,'cOrange');
+ const dose={IRI:{},'5FU':{}}; for(let c=16;c<=20;c++){dose.IRI[c]=80;dose['5FU'][c]=80;}
+ return {id:uid(),sample:true,label:'サンプル症例 A',initials:'K.M.',sex:'M',age:'68',height:'168',weight:'61',side:'左',primary:'Rs',stage:'IVb',surgery:'HAR',surgeryNote:'',
+  ras:'野生型',rasDetail:'',braf:'野生型',her2:'陰性',msi:'MSS/pMMR',ugt:'野生型',other:['なし'],cgp:'未実施',cgpNote:'',ps:'0',comorb:['HT'],
+  metLiver:true,metLung:true,metPerit:false,metOtherOn:false,metOther:[],
+  startDate:'2025-04-07',deathDate:'',lastFU:'',
   intro:'job トラック運転手。',
-  issues:'手指症状(皮膚障害)を繰り返すなら抗EGFR抗体をCmabに変更するか',
-  lessons:'はじめからCmabで毎週状態チェックがよかったか',
+  issues:'皮膚障害で抗EGFR抗体の休薬が続く場合、仕事との両立を考えて投与スケジュールをどう調整するか',
+  lessons:'導入時から予防的スキンケアを徹底し、皮膚障害を早めに拾う',
   cells,dose,
   lines:[
-   {id:uid(),line:'1',name:'FOLFOX + Pmab',drugs:'5-FU + L-OHP + Pmab',c1:'1',c2:'12',dose:'100',reason:'毒性',start:'2018-04-01',end:'2018-10-20',note:'初回Bolus抜き'},
-   {id:uid(),line:'2',name:'FOLFIRI + Pmab',c1:'13',c2:'19',dose:'',reason:'PD',start:'2018-11-05',end:'2019-02-20',note:''},
-   {id:uid(),line:'',name:'BSC',c1:'20',c2:'23',dose:'',reason:'',start:'2019-03-01',end:'',note:''}],
+   {id:uid(),line:'1',name:'FOLFOX + Pmab',drugs:'5-FU + L-OHP + Pmab',c1:'1',c2:'12',dose:'',reason:'PD',start:'2025-04-07',end:'2025-09-22',note:'12コース目からL-OHP中止(末梢神経障害)'},
+   {id:uid(),line:'2',name:'FOLFIRI + Bmab',c1:'13',c2:'20',dose:'',reason:'PD',start:'2025-10-06',end:'2026-01-26',note:''},
+   {id:uid(),line:'3',name:'TAS-102 + Bmab',c1:'21',c2:'24',dose:'',reason:'',start:'2026-02-09',end:'',note:''}],
   events:[
-   {id:uid(),course:'1',date:'',type:'PS',text:'',tone:'stable'},
-   {id:uid(),course:'4',date:'',type:'PS',text:'',tone:'good'},
-   {id:uid(),course:'9',date:'',type:'PS',text:'手指痛',tone:'bad'},
-   {id:uid(),course:'14',date:'',type:'PS',text:'',tone:'stable'},
-   {id:uid(),course:'18',date:'',type:'PS',text:'倦怠感',tone:'bad'},
-   {id:uid(),course:'4',date:'2018-06-10',type:'CT',text:'肝↓ PR',tone:'good'},
-   {id:uid(),course:'4',date:'2018-06-10',type:'TM',text:'CEA↓',tone:'good'},
-   {id:uid(),course:'8',date:'2018-08-20',type:'CT',text:'肝↓ PR',tone:'good'},
-   {id:uid(),course:'9',date:'2018-08-25',type:'AE',text:'手指裂創 G2・低Mg',tone:'bad'},
-   {id:uid(),course:'14',date:'',type:'AEH',text:'好中球減少 G3',tone:'bad'},
-   {id:uid(),course:'9',date:'2018-08-25',type:'RX',text:'Mg補充・保湿剤',tone:''},
-   {id:uid(),course:'16',date:'2018-12-20',type:'CT',text:'肝PR維持、骨新規',tone:'bad'},
-   {id:uid(),course:'16',date:'2018-12-20',type:'TM',text:'CEA↑',tone:'bad'},
-   {id:uid(),course:'21',date:'2019-03-10',type:'EV',text:'リンパ管症・呼吸不全',tone:'bad'}]};
+   {id:uid(),course:'1',date:'',type:'PS',text:'',tone:'good'},
+   {id:uid(),course:'5',date:'',type:'PS',text:'皮疹',tone:'stable'},
+   {id:uid(),course:'11',date:'',type:'PS',text:'しびれ',tone:'stable'},
+   {id:uid(),course:'15',date:'',type:'PS',text:'',tone:'good'},
+   {id:uid(),course:'20',date:'',type:'PS',text:'倦怠感',tone:'bad'},
+   {id:uid(),course:'4',date:'',type:'CT',text:'肝・肺 縮小 PR',tone:'good'},
+   {id:uid(),course:'4',date:'',type:'TM',text:'CEA↓',tone:'good'},
+   {id:uid(),course:'8',date:'',type:'CT',text:'PR維持',tone:'good'},
+   {id:uid(),course:'12',date:'',type:'CT',text:'肝 増大 PD',tone:'bad'},
+   {id:uid(),course:'12',date:'',type:'TM',text:'CEA↑',tone:'bad'},
+   {id:uid(),course:'16',date:'',type:'CT',text:'SD',tone:'stable'},
+   {id:uid(),course:'20',date:'',type:'CT',text:'肺 新規 PD',tone:'bad'},
+   {id:uid(),course:'5',date:'',type:'AE',text:'ざ瘡様皮疹 G2',tone:'bad'},
+   {id:uid(),course:'8',date:'',type:'AE',text:'爪囲炎・低Mg',tone:'bad'},
+   {id:uid(),course:'11',date:'',type:'AE',text:'末梢神経障害 G2',tone:'bad'},
+   {id:uid(),course:'15',date:'',type:'AEH',text:'好中球減少 G3',tone:'bad'},
+   {id:uid(),course:'5',date:'',type:'RX',text:'MINO・保湿剤',tone:''},
+   {id:uid(),course:'8',date:'',type:'RX',text:'Mg補充',tone:''}]};
 }
 function blank(){return {id:uid(),label:'新規症例',initials:'',sex:'',age:'',height:'',weight:'',side:'',primary:'',stage:'',surgery:'',ras:'',rasDetail:'',braf:'',her2:'',msi:'',ugt:'',other:'',cgp:'',ps:'',comorb:'',metLiver:false,metLung:false,metPerit:false,metOtherOn:false,metOther:'',startDate:'',deathDate:'',lastFU:'',intro:'',issues:'',lessons:'',cells:{},dose:{},lines:[],events:[]}}
 
 let db={patients:[],cur:null,brush:'cBlue'};
 try{const s=localStorage.getItem(KEY); if(s) db=JSON.parse(s);}catch(e){}
 if(!db.patients||!db.patients.length){const s=sample(); db={patients:[s],cur:s.id,brush:'cBlue'};}
-db.patients.forEach(p=>{if(p.sample){p.side='右';p.primary='A';p.stage='IVb';p.msi='MSS/pMMR';p.comorb=['なし'];p.cgp='未実施';p.surgery='RHC';p.intro='job トラック運転手。';const l1=(p.lines||[])[0];if(l1&&!l1.drugs)l1.drugs='5-FU + L-OHP + Pmab';}if(p.metBone&&p.metOtherOn===undefined)p.metOtherOn=true;delete p.metBone;p.cells=p.cells||{};p.dose=p.dose||{};p.lines=p.lines||[];p.events=p.events||[];});
+db.patients=db.patients.map(p=>p.sample?Object.assign(sample(),{id:p.id}):p);
+db.patients.forEach(p=>{if(p.metBone&&p.metOtherOn===undefined)p.metOtherOn=true;delete p.metBone;p.cells=p.cells||{};p.dose=p.dose||{};p.lines=p.lines||[];p.events=p.events||[];});
 let saveT;
 function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(db));}catch(e){}},250);}
 const cur=()=>db.patients.find(p=>p.id===db.cur)||db.patients[0];
@@ -313,9 +320,10 @@ function drawTL(){
   s+=`<text x="8" y="${y+16}" font-size="12" font-weight="700" fill="var(--ink)">${l}</text>`;
   if(TAP.includes(k)) for(let c=1;c<=N;c++) s+=`<rect class="tap" data-k="${k}" data-c="${c}" x="${xOf(c-1)}" y="${y}" width="${unit}" height="${EH-4}" fill="transparent"><title>${c}コース目</title></rect>`;
   const evs=p.events.filter(e=>rowOf(e.type)===k&&+e.course).sort((a,b)=>a.course-b.course);
-  let lastX=-1e9, alt=0;
+  let endTop=-1e9, endBot=-1e9, alt=0;
   evs.forEach(e=>{const x=xOf(+e.course-.5);
-   alt=(x-lastX<90)?1-alt:0; lastX=x;
+   const tw=e.text?(12+[...e.text].reduce((w,ch)=>w+(ch.charCodeAt(0)>255?11:6.5),0)):12;
+   if(x-10>=endTop){alt=0;endTop=x+tw;} else if(x-10>=endBot){alt=1;endBot=x+tw;} else {alt=endTop<=endBot?0:1; if(alt)endBot=x+tw; else endTop=x+tw;}
    const c=e.tone==='good'?'var(--good)':e.tone==='bad'?'var(--bad)':'var(--muted)';
    if(k==='RX') s+=`<g transform="translate(${x},${y+11}) rotate(-35)"><rect x="-9" y="-4" width="18" height="8" rx="4" fill="#f7f0dc" stroke="#111" stroke-width="1.2"/><path d="M0 -4 h5 a4 4 0 0 1 0 8 h-5 z" fill="#3a7bd5" stroke="#111" stroke-width="1.2"/></g>`;
    else if(k==='AE') s+=`<image href="${e.type==='AEH'?ICON.rx:ICON.ae}" x="${x-11}" y="${y}" width="22" height="24" preserveAspectRatio="xMidYMid meet"/>`;
