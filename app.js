@@ -24,6 +24,7 @@ function sample(){
  fill(cells,'5FU',13,20,'cGreen'); fill(cells,'IRI',13,20,'cGreen'); fill(cells,'VEGF',13,20,'cGreen');
  fill(cells,'TAS',21,24,'cOrange'); fill(cells,'VEGF',21,24,'cOrange');
  const dose={IRI:{},'5FU':{}}; for(let c=16;c<=20;c++){dose.IRI[c]=80;dose['5FU'][c]=80;}
+ const lab={EGFR:{},VEGF:{}}; for(let c=1;c<=12;c++) if(c!==7&&c!==8) lab.EGFR[c]='P'; lab.EGFR[7]='休'; lab.EGFR[8]='休'; for(let c=13;c<=24;c++) lab.VEGF[c]='Bv';
  return {id:uid(),sample:true,label:'サンプル症例 A',initials:'K.M.',sex:'M',age:'68',height:'168',weight:'61',side:'左',primary:'Rs',stage:'IVb',surgery:'HAR',surgeryNote:'',
   ras:'野生型',rasDetail:'',braf:'野生型',her2:'陰性',msi:'MSS/pMMR',ugt:'野生型',other:['なし'],cgp:'未実施',cgpNote:'',ps:'0',comorb:['HT'],
   metLiver:true,metLung:true,metPerit:false,metOtherOn:false,metOther:[],
@@ -31,7 +32,7 @@ function sample(){
   intro:'job トラック運転手。',
   issues:'',
   lessons:'',
-  cells,dose,
+  cells,dose,lab,
   lines:[
    {id:uid(),line:'1',name:'FOLFOX + Pmab',drugs:'5-FU + L-OHP + Pmab',c1:'1',c2:'12',dose:'',reason:'PD',note:''},
    {id:uid(),line:'2',name:'FOLFIRI + Bmab',c1:'13',c2:'20',dose:'',reason:'PD',note:''},
@@ -56,13 +57,13 @@ function sample(){
    {id:uid(),course:'5',type:'RX',text:'',tone:''},
    {id:uid(),course:'8',type:'RX',text:'',tone:''}]};
 }
-function blank(){return {id:uid(),label:'新規症例',initials:'',sex:'',age:'',height:'',weight:'',side:'',primary:'',stage:'',surgery:'',ras:'',rasDetail:'',braf:'',her2:'',msi:'',ugt:'',other:'',cgp:'',ps:'',comorb:'',metLiver:false,metLung:false,metPerit:false,metOtherOn:false,metOther:'',status:'',nCourses:25,intro:'',issues:'',lessons:'',cells:{},dose:{},lines:[],events:[]}}
+function blank(){return {id:uid(),label:'新規症例',initials:'',sex:'',age:'',height:'',weight:'',side:'',primary:'',stage:'',surgery:'',ras:'',rasDetail:'',braf:'',her2:'',msi:'',ugt:'',other:'',cgp:'',ps:'',comorb:'',metLiver:false,metLung:false,metPerit:false,metOtherOn:false,metOther:'',status:'',nCourses:25,intro:'',issues:'',lessons:'',cells:{},dose:{},lab:{},lines:[],events:[]}}
 
 let db={patients:[],cur:null,brush:'cBlue'};
 try{const s=localStorage.getItem(KEY); if(s) db=JSON.parse(s);}catch(e){}
 if(!db.patients||!db.patients.length){const s=sample(); db={patients:[s],cur:s.id,brush:'cBlue'};}
 db.patients=db.patients.map(p=>p.sample?Object.assign(sample(),{id:p.id}):p);
-db.patients.forEach(p=>{if(!p.status&&p.deathDate)p.status='死亡';if(!p.nCourses)p.nCourses=25;if(p.metBone&&p.metOtherOn===undefined)p.metOtherOn=true;delete p.metBone;p.cells=p.cells||{};p.dose=p.dose||{};p.lines=p.lines||[];p.events=p.events||[];});
+db.patients.forEach(p=>{if(!p.status&&p.deathDate)p.status='死亡';if(!p.nCourses)p.nCourses=25;if(p.metBone&&p.metOtherOn===undefined)p.metOtherOn=true;delete p.metBone;p.cells=p.cells||{};p.lab=p.lab||{};p.dose=p.dose||{};p.lines=p.lines||[];p.events=p.events||[];});
 let saveT;
 function save(){const c=db.patients.find(p=>p.id===db.cur);if(c)c.upd=Date.now();clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(db));}catch(e){}},250);}
 const cur=()=>db.patients.find(p=>p.id===db.cur)||db.patients[0];
@@ -71,7 +72,8 @@ function maxCourse(p){let m=0;
  Object.values(p.cells).forEach(o=>Object.keys(o).forEach(c=>{if(o[c]) m=Math.max(m,+c);}));
  p.lines.forEach(l=>m=Math.max(m,+l.c2||+l.c1||0)); p.events.forEach(e=>m=Math.max(m,+e.course||0)); return m;}
 function lineDose(p,c1,c2){let sum=0,n=0;LANES.forEach(([k])=>{const o=p.cells[k]||{},d=p.dose[k]||{};for(let c=+c1;c<=+(c2||c1);c++) if(o[c]){sum+=(+d[c]||100);n++;}});return n?Math.round(sum/n):'';}
-function lanesOf(p,c1,c2){return LANES.filter(([k])=>{const o=p.cells[k]||{};for(let c=+c1;c<=+(c2||c1);c++) if(o[c]) return true;return false;}).map(x=>x[1]);}
+function lanesOf(p,c1,c2){const L=p.lab||{};return LANES.filter(([k])=>{const o=p.cells[k]||{};for(let c=+c1;c<=+(c2||c1);c++) if(o[c]) return true;return false;}).map(([k,n])=>{
+ const o=p.cells[k]||{}, set=new Set(); for(let c=+c1;c<=+(c2||c1);c++){const t=(L[k]||{})[c]; if(o[c]&&t&&t!=='休') set.add(t);} return set.size?`${n}(${[...set].join('/')})`:n;});}
 
 /* ---------- list ---------- */
 const norm=t=>String(t??'').normalize('NFKC').toLowerCase();
@@ -113,7 +115,7 @@ function bindFinder(){
 const PRIMARY=['C','A','T','D','S','Rs','Ra','Rb'];
 const SIDE_OF={C:'右',A:'右',T:'右',D:'左',S:'左',Rs:'左',Ra:'左',Rb:'左'};
 const STATUS=['治療中','休薬・経過観察','BSC','死亡','転院・終了'];
-const SURG=['未切除','RHC','横行結腸切除','LHC','S状結腸切除','HAR','LAR','ISR','APR','ハルトマン','人工肛門のみ','ステント'];
+const SURG=['未切除','RHC','結腸部分切除','LHC','S状結腸切除','HAR','LAR','ISR','APR','ハルトマン','人工肛門のみ','ステント'];
 const COMORB=['なし','DM','HT','心疾患','腎障害','肝障害','COPD','脳血管障害','認知症'];
 const OTHERSITES=['骨','脳','遠隔LN','副腎','卵巣','皮膚','その他'];
 const arr=v=>Array.isArray(v)?v:(v?String(v).split(/[・,、]+/).map(x=>x.trim()).filter(Boolean):[]);
@@ -234,7 +236,7 @@ function renderMain(){
  });
  m.querySelectorAll('[data-met]').forEach(b=>{b.setAttribute('aria-pressed',!!p[b.dataset.met]);b.onclick=()=>{p[b.dataset.met]=!p[b.dataset.met];b.setAttribute('aria-pressed',p[b.dataset.met]);delete p.sample;save();};});
  m.querySelectorAll('[data-brush]').forEach(b=>b.onclick=()=>{db.brush=b.dataset.brush;save();m.querySelectorAll('[data-brush]').forEach(x=>x.setAttribute('aria-pressed',x===b));});
- document.getElementById('faceLegend').innerHTML=['good','stable','bad'].map((t,i)=>`<svg width="20" height="14" viewBox="-8 -7 20 14" style="vertical-align:-3px">${face(t,0,0,6)}</svg>${['良い・奏効','ふつう・不変','悪い・増悪'][i]}`).join(' ')+` <img src="${ICON.rx}" alt="" style="height:16px;vertical-align:-4px"> 血液毒性 <img src="${ICON.ae}" alt="" style="height:16px;vertical-align:-4px"> 非血液毒性(消化器など) <span style="margin-left:8px">薬剤のマスは右クリック(スマホは長押し)で減量%を入力 ・ 体調・画像・TMはタップで 良い→ふつう→悪い→消去</span>`;
+ document.getElementById('faceLegend').innerHTML=['good','stable','bad'].map((t,i)=>`<svg width="20" height="14" viewBox="-8 -7 20 14" style="vertical-align:-3px">${face(t,0,0,6)}</svg>${['良い・奏効','ふつう・不変','悪い・増悪'][i]}`).join(' ')+` <img src="${ICON.rx}" alt="" style="height:16px;vertical-align:-4px"> 血液毒性 <img src="${ICON.ae}" alt="" style="height:16px;vertical-align:-4px"> 非血液毒性(消化器など) <span style="margin-left:8px">薬剤のマスは右クリック(スマホは長押し)で文字(Bv・P など)と減量%を入力 ・ 体調・画像・TMはタップで 良い→ふつう→悪い→消去</span>`;
  visual();
  document.getElementById('printBtn').onclick=()=>window.print();
  document.getElementById('shareBtn').onclick=openShare;
@@ -350,7 +352,9 @@ function drawTL(){
   const dd=p.dose[k]||{};
   for(let c=1;c<=N;c++){const col=o[c];
    s+=`<rect class="cell" data-l="${k}" data-c="${c}" x="${xOf(c-1)}" y="${y}" width="${unit}" height="${LH}" fill="${col?`var(--${col})`:'transparent'}" stroke="var(--line)" stroke-width=".6"/>`;
-   if(col&&dd[c]&&+dd[c]<100) s+=`<text x="${xOf(c-1)+unit/2}" y="${y+16}" font-size="10" font-weight="700" text-anchor="middle" fill="var(--ink)" class="num">${+dd[c]}</text>`;}
+   const tl=((p.lab||{})[k]||{})[c], prev=((p.lab||{})[k]||{})[c-1];
+   if(tl&&(tl!==prev||!o[c-1]!==!col)) s+=`<text x="${xOf(c-1)+3}" y="${y+(col&&dd[c]&&+dd[c]<100?11:16)}" font-size="${tl.length>3?9.5:11}" font-weight="700" fill="${col?'var(--ink)':'var(--muted)'}">${esc(tl)}</text>`;
+   if(col&&dd[c]&&+dd[c]<100) s+=`<text x="${xOf(c)-3}" y="${y+(tl?21:16)}" font-size="${tl?9:10}" font-weight="700" text-anchor="end" fill="var(--ink)" class="num">${+dd[c]}</text>`;}
  });
  for(let c=5;c<=N;c+=5) s+=`<line x1="${xOf(c)}" y1="${gTop}" x2="${xOf(c)}" y2="${H-4}" stroke="var(--muted)" stroke-width=".8" opacity=".5"/>`;
  // 評価・イベント
@@ -371,31 +375,44 @@ function drawTL(){
  const mi=document.getElementById('cMinus'); if(mi) mi.disabled=N-5<Math.max(5,maxCourse(p));
 }
 /* 用量%ポップオーバー */
+const QUICK={'5FU':['Cape','S-1'],REG:['Rego','Fruq'],VEGF:['Bv','Ram','Afl'],EGFR:['P','C'],ICI:['Pem','Niv','Ipi'],TGT:['Enc','Sot','Tra'],LOCAL:['肝切','RFA','SBRT']};
 function openDose(p,k,c){
  closeDose();
- p.cells[k]=p.cells[k]||{};
- if(!p.cells[k][c]){ if(!db.brush) return; p.cells[k][c]=db.brush; drawTL(); }
+ p.cells[k]=p.cells[k]||{}; p.lab=p.lab||{};
  const r=document.querySelector(`rect.cell[data-l="${k}"][data-c="${c}"]`); if(!r) return;
  const wrap=document.getElementById('tl'), wb=wrap.getBoundingClientRect(), rb=r.getBoundingClientRect();
- const curD=+((p.dose[k]||{})[c])||100, lab=(LANES.find(x=>x[0]===k)||[])[1];
+ const curD=+((p.dose[k]||{})[c])||100, curL=(p.lab[k]||{})[c]||'', lab=(LANES.find(x=>x[0]===k)||[])[1];
+ const qs=[...(QUICK[k]||[]),'休'];
  const pop=document.createElement('div'); pop.className='dosepop'; pop.id='dosePop';
- pop.innerHTML=`<div class="dp-h">${esc(lab)} ・ ${c}コース目 <span class="num">${curD}%</span></div>
+ pop.innerHTML=`<div class="dp-h">${esc(lab)} ・ ${c}コース目</div>
+  <div class="dp-s">マスに書く文字</div>
+  <div class="dp-q">${qs.map(v=>`<button data-lb="${esc(v)}" aria-pressed="${v===curL}">${esc(v)}</button>`).join('')}</div>
+  <div class="dp-r"><input id="dpLab" maxlength="6" placeholder="自由入力(例 Bv)" value="${esc(curL)}" aria-label="マスに書く文字"><button class="btn sm" id="dpLabOk">決定</button></div>
+  <div class="dp-s">用量 <span class="num">${curD}%</span></div>
   <div class="dp-b">${[100,90,80,75,70,60,50].map(v=>`<button data-v="${v}" aria-pressed="${v===curD}">${v}</button>`).join('')}</div>
-  <div class="dp-r"><input id="dpIn" class="num" type="number" min="1" max="150" placeholder="自由入力" aria-label="用量%"><button class="btn sm" id="dpOk">決定</button></div>
+  <div class="dp-r"><input id="dpIn" class="num" type="number" inputmode="decimal" min="1" max="150" placeholder="自由入力" aria-label="用量%"><button class="btn sm" id="dpOk">決定</button></div>
   <label class="dp-c"><input type="checkbox" id="dpFwd" checked> 続けて塗られたマスにも適用</label>`;
  wrap.appendChild(pop);
- let left=rb.left-wb.left+wrap.scrollLeft+rb.width/2-110, topY=rb.bottom-wb.top+wrap.scrollTop+4;
- left=Math.max(wrap.scrollLeft+4,Math.min(left,wrap.scrollLeft+wrap.clientWidth-224));
+ let left=rb.left-wb.left+wrap.scrollLeft+rb.width/2-118, topY=rb.bottom-wb.top+wrap.scrollTop+4;
+ left=Math.max(wrap.scrollLeft+4,Math.min(left,wrap.scrollLeft+wrap.clientWidth-244));
  pop.style.left=left+'px'; pop.style.top=topY+'px';
- const set=v=>{v=Math.round(+v); if(!v) return;
-  const fwd=pop.querySelector('#dpFwd').checked, o=p.cells[k]; p.dose[k]=p.dose[k]||{};
-  for(let i=+c;o[i];i++){ if(v>=100) delete p.dose[k][i]; else p.dose[k][i]=v; if(!fwd) break; }
-  delete p.sample; save(); closeDose(); drawTL(); renderLines();};
- pop.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>set(b.dataset.v));
- pop.querySelector('#dpOk').onclick=()=>set(pop.querySelector('#dpIn').value);
- pop.querySelector('#dpIn').onkeydown=e=>{if(e.key==='Enter') set(e.target.value);};
+ const range=()=>{const fwd=pop.querySelector('#dpFwd').checked, o=p.cells[k], out=[+c];
+  if(fwd&&o[c]) for(let i=+c+1;o[i];i++) out.push(i); return out;};
+ const done=()=>{delete p.sample; save(); closeDose(); drawTL(); renderLines();};
+ const setD=v=>{v=Math.round(+v); if(!v) return;
+  if(!p.cells[k][c]){ if(!db.brush) return; p.cells[k][c]=db.brush; }
+  p.dose[k]=p.dose[k]||{}; range().forEach(i=>{ if(v>=100) delete p.dose[k][i]; else p.dose[k][i]=v; }); done();};
+ const setL=t=>{t=String(t||'').trim().slice(0,6); p.lab[k]=p.lab[k]||{};
+  range().forEach(i=>{ if(t) p.lab[k][i]=t; else delete p.lab[k][i]; }); done();};
+ pop.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>setD(b.dataset.v));
+ pop.querySelector('#dpOk').onclick=()=>setD(pop.querySelector('#dpIn').value);
+ pop.querySelector('#dpIn').onkeydown=e=>{if(e.key==='Enter') setD(e.target.value);};
+ pop.querySelectorAll('[data-lb]').forEach(b=>b.onclick=()=>setL(b.dataset.lb===curL?'':b.dataset.lb));
+ pop.querySelector('#dpLabOk').onclick=()=>setL(pop.querySelector('#dpLab').value);
+ pop.querySelector('#dpLab').onkeydown=e=>{if(e.key==='Enter') setL(e.target.value);};
  setTimeout(()=>document.addEventListener('pointerdown',outside,true),0);
 }
+
 function outside(e){const pop=document.getElementById('dosePop'); if(pop&&!pop.contains(e.target)) closeDose();}
 function closeDose(){document.getElementById('dosePop')?.remove(); document.removeEventListener('pointerdown',outside,true);}
 document.addEventListener('keydown',e=>{if(e.key==='Escape') closeDose();});
@@ -403,7 +420,7 @@ function bindChart(p){
  const svg=document.getElementById('chartSvg'); if(!svg) return;
  let painting=null, moved=false, lpTimer=null, lastCell={};
  const apply=rect=>{const k=rect.dataset.l, c=rect.dataset.c; p.cells[k]=p.cells[k]||{};
-  if(painting) p.cells[k][c]=painting; else {delete p.cells[k][c]; if(p.dose[k]) delete p.dose[k][c];}
+  if(painting) p.cells[k][c]=painting; else {delete p.cells[k][c]; if(p.dose[k]) delete p.dose[k][c]; if(p.lab&&p.lab[k]) delete p.lab[k][c];}
   rect.setAttribute('fill',painting?`var(--${painting})`:'transparent');};
  svg.addEventListener('pointerdown',e=>{
   const r=e.target.closest('rect.cell'); if(!r) return;
@@ -462,7 +479,7 @@ fileIn.onchange=()=>{const f=fileIn.files[0]; if(!f) return; const rd=new FileRe
 ioApply.onclick=()=>{
  try{const d=JSON.parse(ioBox.value); if(!Array.isArray(d.patients)) throw 0;
   const ids=new Set(db.patients.map(p=>p.id));
-  d.patients.forEach(p=>{p.cells=p.cells||{};p.dose=p.dose||{};p.lines=p.lines||[];p.events=p.events||[]; if(ids.has(p.id)) db.patients=db.patients.map(x=>x.id===p.id?p:x); else db.patients.push(p);});
+  d.patients.forEach(p=>{p.cells=p.cells||{};p.lab=p.lab||{};p.dose=p.dose||{};p.lines=p.lines||[];p.events=p.events||[]; if(ids.has(p.id)) db.patients=db.patients.map(x=>x.id===p.id?p:x); else db.patients.push(p);});
   db.patients=db.patients.filter(p=>!(p.sample&&d.patients.length));
   db.cur=d.patients[0]?.id||db.cur; save(); io.hidden=true; renderAll();
  }catch(e){ioBox.value='読み込めませんでした。このツールで保存したJSONをそのまま貼り付けてください。\n\n'+ioBox.value;}

@@ -160,8 +160,12 @@ rect.tap:hover{fill:var(--accent);fill-opacity:.12}
 .brushbar .eraser{background:var(--paper);color:var(--muted)}
 .hint{font-size:12px;color:var(--muted)}
 rect.cell{cursor:pointer;touch-action:none;-webkit-touch-callout:none;user-select:none}
-.dosepop{position:absolute;z-index:5;width:220px;background:var(--paper);border:1px solid var(--line);border-radius:8px;box-shadow:0 6px 24px rgb(0 0 0 / .18);padding:10px;display:flex;flex-direction:column;gap:8px;font-size:12px}
-.dp-h{font-weight:700}.dp-h .num{color:var(--accent);margin-left:4px}
+.dosepop{position:absolute;z-index:5;width:236px;background:var(--paper);border:1px solid var(--line);border-radius:8px;box-shadow:0 6px 24px rgb(0 0 0 / .18);padding:10px;display:flex;flex-direction:column;gap:8px;font-size:12px}
+.dp-h{font-weight:700}
+.dp-s{font-size:11px;color:var(--muted);margin-top:2px}.dp-s .num{color:var(--accent);font-weight:700}
+.dp-q{display:flex;flex-wrap:wrap;gap:4px}
+.dp-q button{border:1px solid var(--line);background:var(--bg);border-radius:5px;padding:4px 9px;cursor:pointer;font-weight:700;min-width:36px}
+.dp-q button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}.dp-h .num{color:var(--accent);margin-left:4px}
 .dp-b{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
 .dp-b button{border:1px solid var(--line);background:var(--bg);border-radius:5px;padding:4px 0;cursor:pointer;font-family:var(--num)}
 .dp-b button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
