@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="大腸癌化学療法の治療経過・副作用を視覚的に記録するチャート。データは端末内にのみ保存されます。">
+<meta name="theme-color" content="#1f5c66">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="VISUAL CHART">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>大腸癌化学療法 VISUAL CHART</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=BIZ+UDGothic:wght@400;700&display=swap">
+<style>
+/* Layout: 左に症例リスト、右に「背景 → タイムライン → レジメン表 → イベント表 → 振り返り」の縦積み。紙のチャートの順番を踏襲 */
+:root{
+  --bg:#f4f5f2; --paper:#ffffff; --ink:#1c2320; --muted:#5d6762; --line:#d5dad5; --soft:#eceeea;
+  --accent:#1f5c66; --accent-ink:#ffffff; --good:#2e7d4f; --bad:#b3261e; --warn:#9a6b00;
+  --r1:#c7d3ec; --r2:#ecc0c3; --r3:#d9ecc7; --r4:#ecdcb8; --r5:#d6c9ea; --r6:#c4e3e6;
+  --sideR:#f8dcc0; --sideL:#dbeac9; --hit:#c8664a; --hit-ink:#ffffff;
+  --cBlue:#a8d5ee; --cGreen:#5fd37c; --cRed:#ef7b7b; --cOrange:#f5b768; --cPurple:#b9a3e3;
+  --ui:"BIZ UDPGothic","Hiragino Sans","Yu Gothic","Meiryo",system-ui,sans-serif;
+  --num:"BIZ UDGothic","Hiragino Sans","Yu Gothic",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141917; --paper:#1c2220; --ink:#e4e9e6; --muted:#9aa49f; --line:#333c38; --soft:#232a27;
+  --accent:#6fb3bd; --accent-ink:#0e1615; --good:#6cc28f; --bad:#f08a80; --warn:#e0b450;
+  --r1:#3a4a6e; --r2:#6e3b40; --r3:#40593a; --r4:#5e4e2c; --r5:#4d4068; --r6:#2f5a5e;
+  --sideR:#4a3424; --sideL:#2e3e26; --hit:#d9785c; --hit-ink:#1a0f0a;
+  --cBlue:#36627e; --cGreen:#2f7a45; --cRed:#8a3b3b; --cOrange:#8a5d22; --cPurple:#5b4a86; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141917; --paper:#1c2220; --ink:#e4e9e6; --muted:#9aa49f; --line:#333c38; --soft:#232a27;
+  --accent:#6fb3bd; --accent-ink:#0e1615; --good:#6cc28f; --bad:#f08a80; --warn:#e0b450;
+  --r1:#3a4a6e; --r2:#6e3b40; --r3:#40593a; --r4:#5e4e2c; --r5:#4d4068; --r6:#2f5a5e;
+  --sideR:#4a3424; --sideL:#2e3e26; --hit:#d9785c; --hit-ink:#1a0f0a;
+  --cBlue:#36627e; --cGreen:#2f7a45; --cRed:#8a3b3b; --cOrange:#8a5d22; --cPurple:#5b4a86; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:14px/1.6 var(--ui)}
+button,input,select,textarea{font:inherit;color:inherit}
+.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+aside{background:var(--paper);border-right:1px solid var(--line);padding:16px;display:flex;flex-direction:column;gap:12px}
+aside h1{font-size:16px;margin:0;letter-spacing:.04em}
+aside .sub{font-size:11px;color:var(--muted);margin-top:-8px}
+.plist{display:flex;flex-direction:column;gap:2px;overflow:auto;flex:1}
+.plist button{all:unset;cursor:pointer;padding:8px 10px;border-radius:6px;display:flex;justify-content:space-between;gap:8px}
+.plist button:hover{background:var(--soft)}
+.plist button[aria-current="true"]{background:var(--accent);color:var(--accent-ink)}
+.plist small{opacity:.75;font-family:var(--num);font-size:11px}
+.btn{border:1px solid var(--line);background:var(--paper);border-radius:6px;padding:6px 10px;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.danger{color:var(--bad)}
+.btn.sm{padding:2px 8px;font-size:12px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tools{display:flex;flex-wrap:wrap;gap:6px}
+main{padding-block:16px 48px;padding-inline:20px;min-width:0;display:flex;flex-direction:column;gap:16px}
+.head{display:flex;flex-wrap:wrap;align-items:baseline;gap:12px;justify-content:space-between}
+.head h2{margin:0;font-size:20px}
+.head .meta{color:var(--muted);font-size:12px;font-family:var(--num)}
+section.panel{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:14px 16px;min-width:0}
+section.panel>h3{margin:0 0 10px;font-size:12px;letter-spacing:.12em;color:var(--muted);font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px 12px}
+.f{display:flex;flex-direction:column;gap:2px;min-width:0}
+.f label{font-size:11px;color:var(--muted)}
+.f input,.f select,.f textarea{border:1px solid var(--line);background:var(--bg);border-radius:5px;padding:5px 7px;min-width:0;width:100%}
+.f textarea{min-height:64px;resize:vertical}
+.f.wide{grid-column:span 2}
+.f.full{grid-column:1/-1}
+.calc{font-family:var(--num);padding:5px 0}
+.groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{font-size:11px;color:var(--muted);text-align:left;font-weight:700;padding:4px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:3px 4px;border-bottom:1px solid var(--soft);vertical-align:top}
+td input,td select,td textarea{border:1px solid transparent;background:transparent;border-radius:4px;padding:3px 5px;width:100%;min-width:0}
+td input:hover,td select:hover,td textarea:hover{border-color:var(--line)}
+td input:focus,td select:focus,td textarea:focus{border-color:var(--accent);background:var(--bg)}
+td textarea{resize:vertical;min-height:28px}
+.comps{display:flex;flex-wrap:wrap;gap:3px;min-width:220px}
+.chip{font-size:11px;border:1px solid var(--line);border-radius:999px;padding:1px 7px;cursor:pointer;user-select:none;background:var(--bg)}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.num{font-family:var(--num)}
+.tl-wrap{position:relative;overflow-x:auto;border:1px solid var(--soft);border-radius:6px;background:var(--paper)}
+svg text{font-family:var(--ui);pointer-events:none}
+rect.tap{cursor:pointer}
+rect.tap:hover{fill:var(--accent);fill-opacity:.12}
+.facebtn{all:unset;cursor:pointer;border-radius:50%;padding:2px;opacity:.35;display:inline-grid}
+.facebtn[aria-pressed="true"]{opacity:1;outline:2px solid var(--accent)}
+.facebtn:focus-visible{outline:2px solid var(--accent);opacity:1}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:11px;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:-1px}
+.notice{font-size:12px;color:var(--muted);border-left:3px solid var(--warn);padding:4px 10px;background:var(--soft);border-radius:0 6px 6px 0}
+.empty{color:var(--muted);text-align:center;padding:40px 0}
+.confirm{display:inline-flex;gap:6px;align-items:center;font-size:12px}
+#ioBox{width:100%;min-height:120px;font-family:var(--num);font-size:11px}
+.visual{display:flex;flex-wrap:wrap;align-items:center;gap:18px}
+.colon{width:96px;height:108px;object-fit:contain}
+.colon.off{filter:grayscale(1);opacity:.25}
+.mets{display:flex;gap:8px}
+.met{all:unset;cursor:pointer;width:64px;height:64px;border-radius:10px;border:1px solid var(--line);display:grid;place-items:center;background:var(--bg)}
+.metlabs{display:flex;gap:8px;margin-top:2px}.metlabs span{width:64px;text-align:center;font-size:11px;font-weight:700}
+.met img{width:46px;height:46px;object-fit:contain;transition:filter .15s,opacity .15s}
+.met[aria-pressed="false"] img{filter:grayscale(1) brightness(.6);opacity:.35}
+.met[aria-pressed="true"]{border-color:var(--accent);background:var(--paper)}
+.met:focus-visible{outline:2px solid var(--accent)}
+.vcap{font-size:11px;color:var(--muted);text-align:center}
+.bm{display:flex;flex-wrap:wrap;gap:6px}
+.bm span{font-size:12px;border-radius:4px;padding:2px 8px;background:var(--soft);font-family:var(--num)}
+.bm span.hit{background:var(--hit);color:var(--hit-ink)}
+.vpanel{transition:background .2s}
+.vpanel[data-side="右"]{background:var(--sideR)}
+.vpanel[data-side="左"]{background:var(--sideL)}
+.swatch{display:inline-flex;gap:3px}
+.swatch button{all:unset;cursor:pointer;width:16px;height:16px;border-radius:4px;border:1px solid var(--line)}
+.swatch button[aria-pressed="true"]{outline:2px solid var(--ink);outline-offset:1px}
+.swatch button.auto{background:repeating-linear-gradient(45deg,var(--r1) 0 4px,var(--r2) 4px 8px)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{all:unset;cursor:pointer;padding:2px 10px;font-size:12px}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.paneltop{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.paneltop h3{margin:0;font-size:12px;letter-spacing:.12em;color:var(--muted)}
+.brand{all:unset;cursor:pointer;display:flex;gap:10px;align-items:center;border-radius:8px}
+.brand img{width:40px;height:40px;object-fit:contain}
+.brand b{display:block;font-size:16px;letter-spacing:.04em}
+.brand small{display:block;font-size:11px;color:var(--muted)}
+.brand:focus-visible{outline:2px solid var(--accent)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.splash{position:fixed;inset:0;z-index:20;background:color-mix(in srgb,var(--bg) 70%,#7d8ca3);display:grid;place-items:center;padding:16px}
+.splash-card{background:var(--paper);border-radius:12px;max-width:560px;width:100%;padding:0 0 20px;display:flex;flex-direction:column;align-items:center;gap:14px;overflow:hidden;box-shadow:0 10px 40px rgb(0 0 0 / .18)}
+.splash-card>img{width:100%;display:block;background:#fff}
+.credits{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding-inline:20px;width:100%}
+.credits div{display:flex;flex-direction:column;gap:2px}
+.credits em{font-size:11px;color:var(--muted);text-decoration:underline;letter-spacing:.06em}
+.credits span{font-size:12px}
+.credits b{font-size:16px}
+.splash-note{font-size:11px;color:var(--muted);margin:0}
+@media (max-width:480px){.credits{grid-template-columns:1fr}}
+.brushbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.brushbar .hint{font-size:11px;color:var(--muted);margin-right:4px}
+.brushbar button{all:unset;cursor:pointer;width:24px;height:24px;border-radius:6px;border:1px solid var(--line);display:grid;place-items:center;font-size:11px}
+.brushbar button[aria-pressed="true"]{outline:2px solid var(--ink);outline-offset:2px}
+.brushbar button:focus-visible{outline:2px solid var(--accent)}
+.brushbar .eraser{background:var(--paper);color:var(--muted)}
+.hint{font-size:12px;color:var(--muted)}
+rect.cell{cursor:pointer;touch-action:none;-webkit-touch-callout:none;user-select:none}
+.dosepop{position:absolute;z-index:5;width:220px;background:var(--paper);border:1px solid var(--line);border-radius:8px;box-shadow:0 6px 24px rgb(0 0 0 / .18);padding:10px;display:flex;flex-direction:column;gap:8px;font-size:12px}
+.dp-h{font-weight:700}.dp-h .num{color:var(--accent);margin-left:4px}
+.dp-b{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.dp-b button{border:1px solid var(--line);background:var(--bg);border-radius:5px;padding:4px 0;cursor:pointer;font-family:var(--num)}
+.dp-b button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.dp-r{display:flex;gap:6px}.dp-r input{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);border-radius:5px;padding:3px 6px}
+.dp-c{display:flex;gap:6px;align-items:center;color:var(--muted)}
+rect.cell:hover{stroke:var(--ink);stroke-width:1.2}
+.share-card{max-width:760px;max-height:90vh;overflow:auto;padding:16px 20px;align-items:stretch;gap:12px}
+.share-h{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.share-h h2{margin:0;font-size:16px}
+.share-sec{border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:6px}
+.share-sec h3{margin:0;font-size:13px}
+.share-sec .hint{margin:0}
+#pngPrev{max-width:100%;border:1px solid var(--line);border-radius:6px;background:#fff}
+.flab{font-size:11px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.tchip{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:5px 12px;min-height:32px;font-size:13px;cursor:pointer;touch-action:manipulation}
+.tchip:hover{border-color:var(--accent)}
+.tchip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+.metsites{flex:1;min-width:220px;max-width:360px}
+@media (max-width:760px){.app{grid-template-columns:1fr}aside{border-right:0;border-bottom:1px solid var(--line)}.plist{max-height:180px}.f.wide{grid-column:1/-1}}
+@media print{aside,.tools,.noprint{display:none!important}.app{display:block}body{background:#fff}section.panel{break-inside:avoid;border-color:#ccc}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="splash" id="shareDlg" hidden role="dialog" aria-modal="true" aria-labelledby="shareTitle">
+  <div class="splash-card share-card">
+    <div class="share-h"><h2 id="shareTitle">この症例を相談用に共有</h2><button class="btn sm" id="shareClose">閉じる</button></div>
+    <label class="dp-c"><input type="checkbox" id="anonChk" checked> イニシャル・日付を外す(匿名化)</label>
+    <div class="share-sec">
+      <h3>1. 画像で送る(メール・チャット向け)</h3>
+      <p class="hint">チャートを1枚の画像にします。相手はアプリ不要で見られます。</p>
+      <div class="tools"><button class="btn primary" id="mkPng">画像を作成</button><button class="btn" id="cpPng" hidden>画像をコピー</button><button class="btn" id="dlPng" hidden>画像を保存</button></div>
+      <img id="pngPrev" alt="共有用チャート画像" hidden>
+      <p class="hint" id="pngNote" hidden>保存ボタンが効かない場合は、画像を右クリック(スマホは長押し)して保存してください。</p>
+    </div>
+    <div class="share-sec">
+      <h3>2. 症例ファイルで送る(相手もこのアプリで編集できる)</h3>
+      <p class="hint">この1症例だけのファイルです。相手は「JSON読込」で取り込むと、自分の一覧に追加されます。</p>
+      <div class="tools"><button class="btn" id="mkCase">症例ファイルを作成</button></div>
+    </div>
+  </div>
+</div>
+<div class="splash" id="splash" hidden role="dialog" aria-modal="true" aria-labelledby="splashTitle">
+  <div class="splash-card">
+    <img id="splashImg" alt="大腸癌化学療法 VISUAL CHART 抗癌剤による治療経過・副作用などを視覚的に捉える!">
+    <h2 id="splashTitle" class="sr">大腸癌化学療法 VISUAL CHART</h2>
+    <div class="credits">
+      <div><em>PRESENTS</em><span>日本医科大学 消化器外科 病院講師</span><b>岩井 拓磨</b></div>
+      <div><em>アドバイザー</em><span>聖マリアンナ医科大学 腫瘍内科 教授</span><b>砂川 優</b></div>
+    </div>
+    <p class="splash-note">データはこの端末のブラウザ内にのみ保存されます。<br>本アプリは治療経過の記録・可視化を目的としたもので、診断や投与量の決定には使用しないでください。</p>
+    <button class="btn primary" id="splashGo">はじめる</button>
+  </div>
+</div>
+<div class="app">
+  <aside>
+    <button class="brand" id="aboutBtn" aria-label="このアプリについて"><img id="brandMark" alt=""><span><b>VISUAL CHART</b><small>大腸癌化学療法 ・ Web版</small></span></button>
+    <div class="tools">
+      <button class="btn primary" id="addP">＋ 症例追加</button>
+    </div>
+    <div class="plist" id="plist"></div>
+    <div class="tools noprint">
+      <button class="btn sm" id="expJson">JSON保存</button>
+      <button class="btn sm" id="impJson">JSON読込</button>
+      <button class="btn sm" id="expCsv">CSV(研究用)</button>
+      <input type="file" id="fileIn" accept=".json,application/json" hidden>
+    </div>
+    <div id="ioArea" hidden>
+      <textarea id="ioBox" aria-label="データ"></textarea>
+      <div class="tools"><button class="btn sm" id="ioCopy">コピー</button><button class="btn sm" id="ioApply" hidden>この内容で読込</button><button class="btn sm" id="ioClose">閉じる</button></div>
+    </div>
+    <div class="tools noprint" id="installBox" hidden><button class="btn sm primary" id="installBtn">アプリとしてインストール</button></div>
+    <p class="hint" id="iosHint" hidden>iPad・iPhone:共有ボタン →「ホーム画面に追加」でアプリとして使えます。</p>
+    <div class="notice">データはこのブラウザ内にのみ保存されます。院外PCやクラウドには置かず、定期的にJSON保存でバックアップしてください。</div>
+  </aside>
+  <main id="main"></main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
