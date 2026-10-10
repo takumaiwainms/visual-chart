@@ -57,15 +57,18 @@ function sample(){
    {id:uid(),course:'5',type:'RX',text:'',tone:''},
    {id:uid(),course:'8',type:'RX',text:'',tone:''}]};
 }
-function blank(){return {id:uid(),label:'新規症例',initials:'',sex:'',age:'',height:'',weight:'',side:'',primary:'',stage:'',surgery:'',ras:'',rasDetail:'',braf:'',her2:'',msi:'',ugt:'',other:'',cgp:'',ps:'',comorb:'',metLiver:false,metLung:false,metPerit:false,metOtherOn:false,metOther:'',status:'',nCourses:25,intro:'',issues:'',lessons:'',cells:{},dose:{},lab:{},lines:[],events:[]}}
+function blank(){return {id:uid(),label:'新規症例',initials:'',sex:'',age:'',height:'',weight:'',side:'',primary:'',stage:'',surgery:'',ras:'',rasDetail:'',braf:'',her2:'',msi:'',ugt:'',other:'',cgp:'',ps:'',comorb:'',metLiver:false,metLung:false,metPerit:false,metOtherOn:false,metOther:'',status:'',nCourses:25,intro:'',issues:'',lessons:'',cells:{},dose:{},lab:{},notes:[],lines:[],events:[]}}
 
 let db={patients:[],cur:null,brush:'cBlue'};
 try{const s=localStorage.getItem(KEY); if(s) db=JSON.parse(s);}catch(e){}
 if(!db.patients||!db.patients.length){const s=sample(); db={patients:[s],cur:s.id,brush:'cBlue'};}
 db.patients=db.patients.map(p=>p.sample?Object.assign(sample(),{id:p.id}):p);
-db.patients.forEach(p=>{if(!p.status&&p.deathDate)p.status='死亡';if(!p.nCourses)p.nCourses=25;if(p.metBone&&p.metOtherOn===undefined)p.metOtherOn=true;delete p.metBone;p.cells=p.cells||{};p.lab=p.lab||{};p.dose=p.dose||{};p.lines=p.lines||[];p.events=p.events||[];});
+db.patients.forEach(p=>{if(!p.status&&p.deathDate)p.status='死亡';if(!p.nCourses)p.nCourses=25;if(p.metBone&&p.metOtherOn===undefined)p.metOtherOn=true;delete p.metBone;p.cells=p.cells||{};p.lab=p.lab||{};p.notes=p.notes||[];p.dose=p.dose||{};p.lines=p.lines||[];p.events=p.events||[];});
 let saveT;
 function save(){const c=db.patients.find(p=>p.id===db.cur);if(c)c.upd=Date.now();clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(db));}catch(e){}},250);}
+function flushSave(){clearTimeout(saveT);try{localStorage.setItem(KEY,JSON.stringify(db));}catch(e){}}
+window.addEventListener('pagehide',flushSave);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushSave();});
 const cur=()=>db.patients.find(p=>p.id===db.cur)||db.patients[0];
 function bsa(p){const h=+p.height,w=+p.weight; if(!h||!w) return ''; return (0.007184*Math.pow(h,0.725)*Math.pow(w,0.425)).toFixed(2);}
 function maxCourse(p){let m=0;
@@ -79,7 +82,7 @@ function lanesOf(p,c1,c2){const L=p.lab||{};return LANES.filter(([k])=>{const o=
 const norm=t=>String(t??'').normalize('NFKC').toLowerCase();
 function hay(p){return norm([p.label,p.initials,p.primary,p.side,p.stage,p.surgery,p.surgeryNote,p.intro,p.issues,p.lessons,p.ras,p.rasDetail,p.braf,p.her2,p.msi,p.cgpNote,
  arr(p.comorb).join(' '),arr(p.other).join(' '),arr(p.metOther).join(' '),
- ...(p.lines||[]).map(l=>[l.name,l.drugs,l.note,l.reason].join(' ')),...(p.events||[]).map(e=>e.text)].join(' '));}
+ ...(p.lines||[]).map(l=>[l.name,l.drugs,l.note,l.reason].join(' ')),...(p.events||[]).map(e=>e.text),...(p.notes||[]).map(n=>n.text)].join(' '));}
 const FILTERS={right:p=>p.side==='右',left:p=>p.side==='左',rasMut:p=>p.ras==='変異',rasWt:p=>p.ras==='野生型',
  dead:p=>p.status==='死亡',active:p=>p.status==='治療中',
  liver:p=>!!p.metLiver,lung:p=>!!p.metLung,perit:p=>!!p.metPerit};
@@ -156,7 +159,7 @@ function renderMain(){
  </div></section>
 
  <section class="panel"><div class="paneltop"><h3>治療経過</h3>
-   <span class="ctools noprint"><button class="btn sm" id="cMinus" title="末尾の空いた5コースを減らす">−5コース</button><span class="num" id="cNum"></span><button class="btn sm" id="cPlus">＋5コース</button></span>
+   <span class="ctools noprint"><button class="btn sm" id="cMinus" title="末尾の空いた5コースを減らす">−5コース</button><span class="num" id="cNum"></span><button class="btn sm" id="cPlus">＋5コース</button><button class="btn sm" id="nAdd">＋付箋</button><button class="btn sm" id="nToggle">付箋を隠す</button></span>
    <div class="brushbar noprint" role="group" aria-label="塗る色">
      <span class="hint">色を選んでマスをタップ・なぞる</span>
      ${COLORS.map(([c,l])=>`<button data-brush="${c}" style="background:var(--${c})" aria-pressed="${db.brush===c}" aria-label="${l}" title="${l}"></button>`).join('')}
@@ -236,7 +239,7 @@ function renderMain(){
  });
  m.querySelectorAll('[data-met]').forEach(b=>{b.setAttribute('aria-pressed',!!p[b.dataset.met]);b.onclick=()=>{p[b.dataset.met]=!p[b.dataset.met];b.setAttribute('aria-pressed',p[b.dataset.met]);delete p.sample;save();};});
  m.querySelectorAll('[data-brush]').forEach(b=>b.onclick=()=>{db.brush=b.dataset.brush;save();m.querySelectorAll('[data-brush]').forEach(x=>x.setAttribute('aria-pressed',x===b));});
- document.getElementById('faceLegend').innerHTML=['good','stable','bad'].map((t,i)=>`<svg width="20" height="14" viewBox="-8 -7 20 14" style="vertical-align:-3px">${face(t,0,0,6)}</svg>${['良い・奏効','ふつう・不変','悪い・増悪'][i]}`).join(' ')+` <img src="${ICON.rx}" alt="" style="height:16px;vertical-align:-4px"> 血液毒性 <img src="${ICON.ae}" alt="" style="height:16px;vertical-align:-4px"> 非血液毒性(消化器など) <span style="margin-left:8px">薬剤のマスは右クリック(スマホは長押し)で文字(Bv・P など)と減量%を入力 ・ 体調・画像・TMはタップで 良い→ふつう→悪い→消去</span>`;
+ document.getElementById('faceLegend').innerHTML=['good','stable','bad'].map((t,i)=>`<svg width="20" height="14" viewBox="-8 -7 20 14" style="vertical-align:-3px">${face(t,0,0,6)}</svg>${['良い・奏効','ふつう・不変','悪い・増悪'][i]}`).join(' ')+` <img src="${ICON.rx}" alt="" style="height:16px;vertical-align:-4px"> 血液毒性 <img src="${ICON.ae}" alt="" style="height:16px;vertical-align:-4px"> 非血液毒性(消化器など) <span style="margin-left:8px">「＋付箋」でメモを貼り、上の帯をつかんで移動 ・ 薬剤のマスは右クリック(スマホは長押し)で文字(Bv・P など)と減量%を入力 ・ 体調・画像・TMはタップで 良い→ふつう→悪い→消去</span>`;
  visual();
  document.getElementById('printBtn').onclick=()=>window.print();
  document.getElementById('shareBtn').onclick=openShare;
@@ -250,6 +253,8 @@ function renderMain(){
    db.cur=db.patients[0].id; save(); renderAll();
   };
  };
+ document.getElementById('nAdd').onclick=()=>addNote(p);
+ document.getElementById('nToggle').onclick=()=>{db.hideNotes=!db.hideNotes;save();renderNotes(p,document.getElementById('tl')._geo);};
  document.getElementById('cPlus').onclick=()=>{p.nCourses=Math.max(+p.nCourses||25,Math.ceil(maxCourse(p)/5)*5)+5;delete p.sample;save();drawTL();};
  document.getElementById('cMinus').onclick=()=>{const n=Math.max(+p.nCourses||25,Math.ceil(maxCourse(p)/5)*5)-5; if(n>=Math.max(5,maxCourse(p))){p.nCourses=n;save();drawTL();}};
  document.getElementById('addL').onclick=()=>{p.lines.push({id:uid(),line:String(p.lines.filter(l=>l.line).length+1),name:'',c1:String(maxCourse(p)+1),c2:'',dose:'100',reason:'',note:''});save();renderLines();drawTL();};
@@ -371,6 +376,7 @@ function drawTL(){
  });
  s+='</svg>'; box.innerHTML=s;
  bindChart(p);
+ box._geo={LW,unit,H}; renderNotes(p,box._geo);
  const cn=document.getElementById('cNum'); if(cn) cn.textContent=N+'コース';
  const mi=document.getElementById('cMinus'); if(mi) mi.disabled=N-5<Math.max(5,maxCourse(p));
 }
@@ -416,6 +422,50 @@ function openDose(p,k,c){
 function outside(e){const pop=document.getElementById('dosePop'); if(pop&&!pop.contains(e.target)) closeDose();}
 function closeDose(){document.getElementById('dosePop')?.remove(); document.removeEventListener('pointerdown',outside,true);}
 document.addEventListener('keydown',e=>{if(e.key==='Escape') closeDose();});
+/* ---------- 付箋 ---------- */
+const NOTE_COLS=[['#fff1a8','黄'],['#ffd3de','桃'],['#cfe6ff','青'],['#d5f2c8','緑']];
+function renderNotes(p,g){
+ const box=document.getElementById('tl'); if(!box) return;
+ box.querySelectorAll('.sticky').forEach(n=>n.remove());
+ p.notes=p.notes||[];
+ const btn=document.getElementById('nToggle'); if(btn) btn.textContent=db.hideNotes?`付箋を表示(${p.notes.length})`:'付箋を隠す';
+ if(db.hideNotes) return;
+ p.notes.forEach(n=>{
+  const el=document.createElement('div'); el.className='sticky'+(n.min?' min':''); el.dataset.id=n.id;
+  el.style.background=n.col||NOTE_COLS[0][0];
+  el.style.left=(g.LW+(+n.c||0)*g.unit)+'px'; el.style.top=(+n.y||0)+'px';
+  el.innerHTML=`<div class="st-h" title="ドラッグで移動"><span class="st-grip">⋮⋮</span>
+    <span class="st-cols">${NOTE_COLS.map(([c,l])=>`<button type="button" data-nc="${c}" style="background:${c}" aria-label="${l}"></button>`).join('')}</span>
+    <button type="button" class="st-b" data-nmin aria-label="${n.min?'広げる':'たたむ'}">${n.min?'▢':'–'}</button><button type="button" class="st-b" data-ndel aria-label="削除">×</button></div>
+   <textarea class="st-t" rows="2" placeholder="メモ" aria-label="付箋のメモ">${esc(n.text||'')}</textarea>`;
+  box.appendChild(el);
+  const ta=el.querySelector('textarea');
+  const fit=()=>{ta.style.height='auto';ta.style.height=Math.min(ta.scrollHeight,220)+'px';}; fit();
+  ta.addEventListener('input',()=>{n.text=ta.value;fit();delete p.sample;save();});
+  el.querySelectorAll('[data-nc]').forEach(b=>b.onclick=()=>{n.col=b.dataset.nc;el.style.background=n.col;save();});
+  el.querySelector('[data-nmin]').onclick=()=>{n.min=!n.min;save();renderNotes(p,g);};
+  const del=el.querySelector('[data-ndel]');
+  del.onclick=()=>{ if(n.text&&!del.classList.contains('arm')){del.classList.add('arm');del.textContent='削除?';setTimeout(()=>{del.classList.remove('arm');del.textContent='×';},2500);return;}
+   p.notes=p.notes.filter(x=>x!==n); save(); renderNotes(p,g); };
+  // ドラッグで移動(マウス・指どちらも)
+  const h=el.querySelector('.st-h'); let sx,sy,ox,oy,drag=false;
+  h.addEventListener('pointerdown',e=>{ if(e.target.closest('button')) return; e.preventDefault();
+   drag=true; sx=e.clientX; sy=e.clientY; ox=el.offsetLeft; oy=el.offsetTop; el.classList.add('drag'); try{h.setPointerCapture(e.pointerId);}catch(_){}});
+  h.addEventListener('pointermove',e=>{ if(!drag) return;
+   const nx=Math.max(0,ox+e.clientX-sx), ny=Math.max(0,oy+e.clientY-sy); el.style.left=nx+'px'; el.style.top=ny+'px';});
+  const end=()=>{ if(!drag) return; drag=false; el.classList.remove('drag');
+   n.c=+((el.offsetLeft-g.LW)/g.unit).toFixed(2); n.y=el.offsetTop; delete p.sample; save();};
+  h.addEventListener('pointerup',end); h.addEventListener('pointercancel',end);
+ });
+}
+function addNote(p){
+ const box=document.getElementById('tl'); const g=box._geo; if(!g) return;
+ p.notes=p.notes||[]; db.hideNotes=false;
+ const x=box.scrollLeft+Math.min(box.clientWidth*0.45,320), y=40+(p.notes.length%5)*18;
+ const n={id:uid(),c:+((x-g.LW)/g.unit).toFixed(2),y,text:'',col:NOTE_COLS[0][0]};
+ p.notes.push(n); delete p.sample; save(); renderNotes(p,g);
+ box.querySelector(`.sticky[data-id="${n.id}"] textarea`)?.focus();
+}
 function bindChart(p){
  const svg=document.getElementById('chartSvg'); if(!svg) return;
  let painting=null, moved=false, lpTimer=null, lastCell={};
@@ -474,15 +524,27 @@ document.getElementById('expCsv').onclick=()=>{
  tryDownload(`visual-chart-lines_${stamp()}.csv`,'﻿'+rows.join('\n'),'text/csv');
 };
 const fileIn=document.getElementById('fileIn');
-document.getElementById('impJson').onclick=()=>{showIO('',true);ioBox.placeholder='JSONを貼り付けて「この内容で読込」、またはファイルを選択';fileIn.click();};
-fileIn.onchange=()=>{const f=fileIn.files[0]; if(!f) return; const rd=new FileReader(); rd.onload=()=>{ioBox.value=rd.result;}; rd.readAsText(f); fileIn.value='';};
+function importData(text){
+ const d=JSON.parse(text); if(!d||!Array.isArray(d.patients)) throw new Error('format');
+ const ids=new Set(db.patients.map(p=>p.id)); let add=0, upd=0;
+ d.patients.filter(p=>!p.sample).forEach(p=>{p.cells=p.cells||{};p.lab=p.lab||{};p.notes=p.notes||[];p.dose=p.dose||{};p.lines=p.lines||[];p.events=p.events||[];
+  if(ids.has(p.id)){db.patients=db.patients.map(x=>x.id===p.id?p:x);upd++;} else {db.patients.push(p);add++;}});
+ if(add+upd) db.patients=db.patients.filter(p=>!p.sample);
+ const first=d.patients.find(p=>!p.sample); if(first) db.cur=first.id;
+ try{localStorage.setItem(KEY,JSON.stringify(db));}catch(_){}
+ renderAll(); return {add,upd};
+}
+function toast(msg){let t=document.getElementById('toast'); if(!t){t=document.createElement('div');t.id='toast';t.className='toast';t.setAttribute('role','status');document.body.appendChild(t);}
+ t.textContent=msg; t.hidden=false; clearTimeout(t._h); t._h=setTimeout(()=>t.hidden=true,3500);}
+document.getElementById('impJson').onclick=()=>{fileIn.value='';fileIn.click();};
+fileIn.onchange=()=>{const f=fileIn.files[0]; if(!f) return; const rd=new FileReader();
+ rd.onload=()=>{try{const r=importData(rd.result); io.hidden=true; toast(`読み込みました:新規 ${r.add} 例・更新 ${r.upd} 例`);}
+  catch(e){showIO(String(rd.result).slice(0,2000),true); ioBox.value='読み込めませんでした。VISUAL CHARTの「JSON保存」で作ったファイルを選んでください。\n\n'+ioBox.value;}};
+ rd.onerror=()=>toast('ファイルを開けませんでした');
+ rd.readAsText(f); fileIn.value='';};
 ioApply.onclick=()=>{
- try{const d=JSON.parse(ioBox.value); if(!Array.isArray(d.patients)) throw 0;
-  const ids=new Set(db.patients.map(p=>p.id));
-  d.patients.forEach(p=>{p.cells=p.cells||{};p.lab=p.lab||{};p.dose=p.dose||{};p.lines=p.lines||[];p.events=p.events||[]; if(ids.has(p.id)) db.patients=db.patients.map(x=>x.id===p.id?p:x); else db.patients.push(p);});
-  db.patients=db.patients.filter(p=>!(p.sample&&d.patients.length));
-  db.cur=d.patients[0]?.id||db.cur; save(); io.hidden=true; renderAll();
- }catch(e){ioBox.value='読み込めませんでした。このツールで保存したJSONをそのまま貼り付けてください。\n\n'+ioBox.value;}
+ try{const r=importData(ioBox.value); io.hidden=true; toast(`読み込みました:新規 ${r.add} 例・更新 ${r.upd} 例`);}
+ catch(e){ioBox.value='読み込めませんでした。このツールで保存したJSONをそのまま貼り付けてください。\n\n'+ioBox.value;}
 };
 document.getElementById('ioCopy').onclick=()=>{ioBox.select();navigator.clipboard?.writeText(ioBox.value).catch(()=>{});};
 document.getElementById('ioClose').onclick=()=>io.hidden=true;
@@ -542,7 +604,9 @@ document.getElementById('mkPng').onclick=async()=>{
  ${met('metLiver',ICON.liver,'肝',0)}${met('metLung',ICON.lung,'肺',1)}${met('metPerit',ICON_PERIT,'腹膜',2)}${met('metOtherOn',ICON.bone,'その他',3)}
  ${arr(p.metOther).length?`<text x="388" y="${44+70}" font-size="11" fill="${muted}">その他: ${esc(arr(p.metOther).join('・'))}</text>`:''}
  ${bm.map((t,i)=>`<text x="${W-200}" y="${56+i*20}" font-size="12" font-weight="700" fill="${ink}">${esc(t)}</text>`).join('')}
- <g transform="translate(12,${HH})">${inner}</g>
+ <g transform="translate(12,${HH})">${inner}${(db.hideNotes?[]:(p.notes||[])).map(n=>{const g=document.getElementById('tl')._geo; const lines=n.min?[(String(n.text||'').split('\n')[0]||'').slice(0,10)]:wrapText(n.text,11).slice(0,8);
+   const nx=g.LW+(+n.c||0)*g.unit, ny=+n.y||0, nh=14+lines.length*15;
+   return `<g><rect x="${nx}" y="${ny}" width="${n.min?96:150}" height="${nh}" rx="3" fill="${n.col||'#fff1a8'}" stroke="#b9a64a" stroke-opacity=".5"/>${lines.map((l,i)=>`<text x="${nx+7}" y="${ny+18+i*15}" font-size="12" fill="#2a2a2a">${esc(l)}</text>`).join('')}</g>`;}).join('')}</g>
  ${FH?`<text x="16" y="${HH+ch+28}" font-size="12" font-weight="700" fill="${ink}">問題点・相談事項</text>${issues.map((l,i)=>`<text x="16" y="${HH+ch+48+i*18}" font-size="12" fill="${ink}">${esc(l)}</text>`).join('')}`:''}
  <text x="${W-14}" y="${H-10}" font-size="10" text-anchor="end" fill="${muted}">大腸癌化学療法 VISUAL CHART</text>
  </svg>`;

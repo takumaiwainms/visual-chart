@@ -94,6 +94,15 @@ td textarea{resize:vertical;min-height:28px}
 .chip{font-size:11px;border:1px solid var(--line);border-radius:999px;padding:1px 7px;cursor:pointer;user-select:none;background:var(--bg)}
 .chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .num{font-family:var(--num)}
+.sticky{position:absolute;z-index:4;width:150px;border-radius:3px;box-shadow:0 3px 10px rgb(0 0 0 / .18);color:#2a2a2a;display:flex;flex-direction:column}
+.sticky.min{width:96px}.sticky.min .st-t{height:22px!important;overflow:hidden;white-space:nowrap;resize:none}.sticky.min .st-cols{display:none}
+.sticky.drag{opacity:.85;box-shadow:0 8px 22px rgb(0 0 0 / .25)}
+.st-h{display:flex;align-items:center;gap:3px;padding:2px 3px;cursor:grab;touch-action:none;user-select:none;background:rgb(0 0 0 / .06);border-radius:3px 3px 0 0}
+.st-grip{font-size:11px;opacity:.5;padding:0 2px;flex:1}
+.st-cols{display:flex;gap:2px}.st-cols button{all:unset;cursor:pointer;width:11px;height:11px;border-radius:50%;border:1px solid rgb(0 0 0 / .25)}
+.st-b{all:unset;cursor:pointer;font-size:12px;line-height:1;padding:2px 4px;border-radius:3px;color:#2a2a2a}
+.st-b:hover{background:rgb(0 0 0 / .1)}.st-b.arm{background:#c0392b;color:#fff;font-size:10px}
+.st-t{border:0;background:transparent;resize:none;font:13px/1.4 var(--ui);color:#2a2a2a;padding:4px 7px 6px;min-height:22px;width:100%;outline:none}
 .tl-wrap{position:relative;overflow-x:auto;border:1px solid var(--soft);border-radius:6px;background:var(--paper)}
 svg text{font-family:var(--ui);pointer-events:none}
 rect.tap{cursor:pointer}
@@ -185,6 +194,7 @@ rect.cell:hover{stroke:var(--ink);stroke-width:1.2}
 .tchip:hover{border-color:var(--accent)}
 .tchip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
 .metsites{flex:1;min-width:220px;max-width:360px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:13px;z-index:30;box-shadow:0 6px 20px rgb(0 0 0 / .2)}
 @media (max-width:760px){.app{grid-template-columns:1fr}aside{border-right:0;border-bottom:1px solid var(--line)}.plist{max-height:180px}.f.wide{grid-column:1/-1}}
 @media print{aside,.tools,.noprint{display:none!important}.app{display:block}body{background:#fff}section.panel{break-inside:avoid;border-color:#ccc}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -243,7 +253,7 @@ rect.cell:hover{stroke:var(--ink);stroke-width:1.2}
       <button class="btn sm" id="expJson">JSON保存</button>
       <button class="btn sm" id="impJson">JSON読込</button>
       <button class="btn sm" id="expCsv">CSV(研究用)</button>
-      <input type="file" id="fileIn" accept=".json,application/json" hidden>
+      <input type="file" id="fileIn" hidden>
     </div>
     <div id="ioArea" hidden>
       <textarea id="ioBox" aria-label="データ"></textarea>
