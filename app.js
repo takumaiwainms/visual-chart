@@ -392,7 +392,7 @@ function drawTL(){
  const mi=document.getElementById('cMinus'); if(mi) mi.disabled=N-5<Math.max(5,maxCourse(p));
 }
 /* 用量%ポップオーバー */
-const QUICK={'5FU':['Cape','S-1'],REG:['Rego','Fruq'],VEGF:['Bv','Ram','Afl'],EGFR:['P','C'],ICI:['Pem','Niv','Ipi'],TGT:['Enc','Sot','Tra'],LOCAL:['肝切','RFA','SBRT']};
+const QUICK={'5FU':['5FU','Cape','S-1','UFT'],REG:['Rego','Fruq'],VEGF:['Bv','Ram','Afl'],EGFR:['P','C'],ICI:['Pem','Niv','Ipi'],TGT:['Enc','Sot','Tra'],LOCAL:['肝切','RFA','SBRT']};
 function openDose(p,k,c){
  closeDose();
  p.cells[k]=p.cells[k]||{}; p.lab=p.lab||{};
