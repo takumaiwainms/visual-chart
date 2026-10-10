@@ -160,6 +160,12 @@ rect.tap:hover{fill:var(--accent);fill-opacity:.12}
 .credits b{font-size:16px}
 .splash-note{font-size:11px;color:var(--muted);margin:0;text-align:center;line-height:1.7;padding-inline:16px}
 .splash-note a{color:var(--accent)}
+.contact{display:flex;flex-direction:column;align-items:center;gap:6px}
+.mailbtn{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;color:var(--accent);font-size:12px}
+.mailbtn:hover,.mailbtn[aria-expanded="true"]{border-color:var(--accent);background:var(--soft)}
+.mailbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mailbox{display:flex;align-items:center;gap:8px;font-size:14px;font-family:var(--num)}
+.mailbox a{color:var(--accent);user-select:all}
 @media (max-width:480px){.credits{grid-template-columns:1fr}}
 .brushbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .brushbar .hint{font-size:11px;color:var(--muted);margin-right:4px}
@@ -227,7 +233,9 @@ rect.cell:hover{stroke:var(--ink);stroke-width:1.2}
       <div><em>企画・開発</em><span>日本医科大学 消化器外科 病院講師</span><b>岩井 拓磨</b></div>
       <div><em>アドバイザー</em><span>聖マリアンナ医科大学 腫瘍内科 教授</span><b>砂川 優</b></div>
     </div>
-    <p class="splash-note">ご意見・不具合のご報告:<a href="https://github.com/takumaiwainms/visual-chart/issues" target="_blank" rel="noopener">GitHub(visual-chart/issues)</a><br>データはこの端末のブラウザ内にのみ保存されます。<br>本アプリは治療経過の記録・可視化を目的としたもので、診断や投与量の決定には使用しないでください。</p>
+    <div class="contact"><button type="button" class="mailbtn" id="mailBtn" aria-expanded="false" aria-controls="mailBox" title="ご意見・不具合のご報告"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 6.5 12 13l8.5-6.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span>お問い合わせ</span></button>
+     <div class="mailbox" id="mailBox" hidden><a href="mailto:takumaiwai@nms.ac.jp?subject=VISUAL%20CHART%20%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6" id="mailAddr">takumaiwai@nms.ac.jp</a><button type="button" class="btn sm" id="mailCopy">コピー</button></div></div>
+    <p class="splash-note">データはこの端末のブラウザ内にのみ保存されます。<br>本アプリは治療経過の記録・可視化を目的としたもので、診断や投与量の決定には使用しないでください。</p>
     <button class="btn primary" id="splashGo">はじめる</button>
   </div>
 </div>
