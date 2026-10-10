@@ -8,13 +8,16 @@ const KEY='visualChart.v5';
 const LANES=[['5FU','5-FU'],['IRI','CPT-11'],['OX','L-OHP'],['TAS','TAS-102'],['REG','Rego / Fruq'],
  ['VEGF','抗VEGF'],['EGFR','抗EGFR'],['ICI','ICI'],['TGT','標的薬'],['LOCAL','局所治療']];
 const COLORS=[['cBlue','青'],['cGreen','緑'],['cRed','赤'],['cOrange','橙'],['cPurple','紫']];
-const EVT=[['PS','体調'],['CT','画像'],['TM','TM'],['AE','有害事象(非血液)'],['AEH','有害事象(血液)'],['RX','投薬・支持療法'],['EV','イベント']];
-const ROWS=[['PS','体調'],['CT','画像'],['TM','TM'],['AE','有害事象'],['RX','投薬'],['EV','イベント']];
-const TAP=['PS','CT','TM'];
+const EVT=[['CT','画像'],['TM','TM'],['AE','有害事象(消化器など)'],['AEH','有害事象(血液)'],['RX','投薬'],['EV','イベント(自由記載)']];
+const ROWS=[['CT','画像'],['TM','TM'],['AE','有害事象・イベント']];
+const TAP=['CT','TM','AE'];
+const RES=['CR','PR','SD','PD'], RES_COL={CR:'#1f7a4a',PR:'#4fae6c',SD:'#8e9792',PD:'#c8473d'};
+const DIRS=[['up','↑'],['down','↓'],['flat','→']];
 const REASONS=['','PD','毒性','患者希望','CR/維持へ','手術・局所治療へ','その他'];
 const uid=()=>Math.random().toString(36).slice(2,10);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const rowOf=t=>t==='AEH'?'AE':t;
+const rowOf=t=>(t==='AEH'||t==='RX'||t==='EV')?'AE':t;
+const toneOf=e=>e.type==='CT'?({CR:'good',PR:'good',SD:'stable',PD:'bad'}[e.res]||''):e.type==='TM'?({down:'good',flat:'stable',up:'bad'}[e.dir]||''):(e.type==='AE'||e.type==='AEH')?'bad':'';
 
 function fill(cells,lane,from,to,col,skip=[]){cells[lane]=cells[lane]||{};for(let c=from;c<=to;c++) if(!skip.includes(c)) cells[lane][c]=col;}
 function sample(){
@@ -38,24 +41,22 @@ function sample(){
    {id:uid(),line:'2',name:'FOLFIRI + Bmab',c1:'13',c2:'20',dose:'',reason:'PD',note:''},
    {id:uid(),line:'3',name:'TAS-102 + Bmab',c1:'21',c2:'24',dose:'',reason:'',note:''}],
   events:[
-   {id:uid(),course:'1',type:'PS',text:'',tone:'good'},
-   {id:uid(),course:'5',type:'PS',text:'',tone:'stable'},
-   {id:uid(),course:'11',type:'PS',text:'',tone:'stable'},
-   {id:uid(),course:'15',type:'PS',text:'',tone:'good'},
-   {id:uid(),course:'20',type:'PS',text:'',tone:'bad'},
-   {id:uid(),course:'4',type:'CT',text:'',tone:'good'},
-   {id:uid(),course:'4',type:'TM',text:'',tone:'good'},
-   {id:uid(),course:'8',type:'CT',text:'',tone:'good'},
-   {id:uid(),course:'12',type:'CT',text:'',tone:'bad'},
-   {id:uid(),course:'12',type:'TM',text:'',tone:'bad'},
-   {id:uid(),course:'16',type:'CT',text:'',tone:'stable'},
-   {id:uid(),course:'20',type:'CT',text:'',tone:'bad'},
+   {id:uid(),course:'4',type:'CT',res:'PR',text:'',tone:'good'},
+   {id:uid(),course:'8',type:'CT',res:'PR',text:'',tone:'good'},
+   {id:uid(),course:'12',type:'CT',res:'PD',text:'',tone:'bad'},
+   {id:uid(),course:'16',type:'CT',res:'SD',text:'',tone:'stable'},
+   {id:uid(),course:'20',type:'CT',res:'PD',text:'',tone:'bad'},
+   {id:uid(),course:'4',type:'TM',dir:'down',text:'',tone:'good'},
+   {id:uid(),course:'8',type:'TM',dir:'flat',text:'',tone:'stable'},
+   {id:uid(),course:'12',type:'TM',dir:'up',text:'',tone:'bad'},
+   {id:uid(),course:'16',type:'TM',dir:'flat',text:'',tone:'stable'},
+   {id:uid(),course:'20',type:'TM',dir:'up',text:'',tone:'bad'},
    {id:uid(),course:'5',type:'AE',text:'',tone:'bad'},
-   {id:uid(),course:'8',type:'AE',text:'',tone:'bad'},
-   {id:uid(),course:'11',type:'AE',text:'',tone:'bad'},
-   {id:uid(),course:'15',type:'AEH',text:'',tone:'bad'},
    {id:uid(),course:'5',type:'RX',text:'',tone:''},
-   {id:uid(),course:'8',type:'RX',text:'',tone:''}]};
+   {id:uid(),course:'8',type:'AE',text:'',tone:'bad'},
+   {id:uid(),course:'8',type:'RX',text:'',tone:''},
+   {id:uid(),course:'11',type:'AE',text:'',tone:'bad'},
+   {id:uid(),course:'15',type:'AEH',text:'',tone:'bad'}]};
 }
 function blank(){return {id:uid(),label:'新規症例',initials:'',sex:'',age:'',height:'',weight:'',side:'',primary:'',stage:'',surgery:'',ras:'',rasDetail:'',braf:'',her2:'',msi:'',ugt:'',other:'',cgp:'',ps:'',comorb:'',metLiver:false,metLung:false,metPerit:false,metOtherOn:false,metOther:'',status:'',nCourses:25,intro:'',issues:'',lessons:'',cells:{},dose:{},lab:{},notes:[],lines:[],events:[]}}
 
@@ -63,7 +64,7 @@ let db={patients:[],cur:null,brush:'cBlue'};
 try{const s=localStorage.getItem(KEY); if(s) db=JSON.parse(s);}catch(e){}
 if(!db.patients||!db.patients.length){const s=sample(); db={patients:[s],cur:s.id,brush:'cBlue'};}
 db.patients=db.patients.map(p=>p.sample?Object.assign(sample(),{id:p.id}):p);
-db.patients.forEach(p=>{if(!p.status&&p.deathDate)p.status='死亡';if(!p.nCourses)p.nCourses=25;if(p.metBone&&p.metOtherOn===undefined)p.metOtherOn=true;delete p.metBone;p.cells=p.cells||{};p.lab=p.lab||{};p.notes=p.notes||[];p.dose=p.dose||{};p.lines=p.lines||[];p.events=p.events||[];});
+db.patients.forEach(p=>{(p.events||[]).forEach(e=>{if(e.type==='CT'&&e.res===undefined&&e.tone)e.res={good:'PR',stable:'SD',bad:'PD'}[e.tone]||'';if(e.type==='TM'&&e.dir===undefined&&e.tone)e.dir={good:'down',stable:'flat',bad:'up'}[e.tone]||'';});if(!p.status&&p.deathDate)p.status='死亡';if(!p.nCourses)p.nCourses=25;if(p.metBone&&p.metOtherOn===undefined)p.metOtherOn=true;delete p.metBone;p.cells=p.cells||{};p.lab=p.lab||{};p.notes=p.notes||[];p.dose=p.dose||{};p.lines=p.lines||[];p.events=p.events||[];});
 let saveT;
 function save(){const c=db.patients.find(p=>p.id===db.cur);if(c)c.upd=Date.now();clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(db));}catch(e){}},250);}
 function flushSave(){clearTimeout(saveT);try{localStorage.setItem(KEY,JSON.stringify(db));}catch(e){}}
@@ -82,7 +83,7 @@ function lanesOf(p,c1,c2){const L=p.lab||{};return LANES.filter(([k])=>{const o=
 const norm=t=>String(t??'').normalize('NFKC').toLowerCase();
 function hay(p){return norm([p.label,p.initials,p.primary,p.side,p.stage,p.surgery,p.surgeryNote,p.intro,p.issues,p.lessons,p.ras,p.rasDetail,p.braf,p.her2,p.msi,p.cgpNote,
  arr(p.comorb).join(' '),arr(p.other).join(' '),arr(p.metOther).join(' '),
- ...(p.lines||[]).map(l=>[l.name,l.drugs,l.note,l.reason].join(' ')),...(p.events||[]).map(e=>e.text),...(p.notes||[]).map(n=>n.text)].join(' '));}
+ ...(p.lines||[]).map(l=>[l.name,l.drugs,l.note,l.reason].join(' ')),...(p.events||[]).map(e=>[e.text,e.res].join(' ')),...(p.notes||[]).map(n=>n.text)].join(' '));}
 const FILTERS={right:p=>p.side==='右',left:p=>p.side==='左',rasMut:p=>p.ras==='変異',rasWt:p=>p.ras==='野生型',
  dead:p=>p.status==='死亡',active:p=>p.status==='治療中',
  liver:p=>!!p.metLiver,lung:p=>!!p.metLung,perit:p=>!!p.metPerit};
@@ -202,7 +203,7 @@ function renderMain(){
  </div>
 
  <section class="panel"><h3>評価・イベントの詳細</h3>
-  <div class="scroll"><table id="evT" style="min-width:720px"><thead><tr><th>コース</th><th>種別</th><th>内容</th><th>表情</th><th></th></tr></thead><tbody></tbody></table></div>
+  <div class="scroll"><table id="evT" style="min-width:720px"><thead><tr><th>コース</th><th>種別</th><th>結果</th><th>メモ・数値</th><th></th></tr></thead><tbody></tbody></table></div>
   <div class="tools noprint" style="margin-top:8px"><button class="btn sm" id="addE">＋ 追加</button></div>
  </section>
 
@@ -239,7 +240,7 @@ function renderMain(){
  });
  m.querySelectorAll('[data-met]').forEach(b=>{b.setAttribute('aria-pressed',!!p[b.dataset.met]);b.onclick=()=>{p[b.dataset.met]=!p[b.dataset.met];b.setAttribute('aria-pressed',p[b.dataset.met]);delete p.sample;save();};});
  m.querySelectorAll('[data-brush]').forEach(b=>b.onclick=()=>{db.brush=b.dataset.brush;save();m.querySelectorAll('[data-brush]').forEach(x=>x.setAttribute('aria-pressed',x===b));});
- document.getElementById('faceLegend').innerHTML=['good','stable','bad'].map((t,i)=>`<svg width="20" height="14" viewBox="-8 -7 20 14" style="vertical-align:-3px">${face(t,0,0,6)}</svg>${['良い・奏効','ふつう・不変','悪い・増悪'][i]}`).join(' ')+` <img src="${ICON.rx}" alt="" style="height:16px;vertical-align:-4px"> 血液毒性 <img src="${ICON.ae}" alt="" style="height:16px;vertical-align:-4px"> 非血液毒性(消化器など) <span style="margin-left:8px">「＋付箋」でメモを貼り、上の帯をつかんで移動 ・ 薬剤のマスは右クリック(スマホは長押し)で文字(Bv・P など)と減量%を入力 ・ 体調・画像・TMはタップで 良い→ふつう→悪い→消去</span>`;
+ document.getElementById('faceLegend').innerHTML=`<span class="lgi">画像 ${RES.map(v=>`<b class="pill" style="background:${RES_COL[v]}">${v}</b>`).join('')}</span><span class="lgi">TM <b style="color:var(--bad)">↑</b><b style="color:var(--good)">↓</b><b style="color:var(--muted)">→</b></span><span class="lgi"><img src="${ICON.ae}" alt="" style="height:15px;vertical-align:-3px">消化器など <img src="${ICON.rx}" alt="" style="height:15px;vertical-align:-3px">血液 ${CAPSULE_SVG}投薬</span><span>画像・TM・有害事象の行はマスをタップして入力 ・ 薬剤のマスは右クリック(スマホは長押し)で文字と減量% ・ 「＋付箋」でメモを貼り、上の帯をつかんで移動</span>`;
  visual();
  document.getElementById('printBtn').onclick=()=>window.print();
  document.getElementById('shareBtn').onclick=openShare;
@@ -284,17 +285,19 @@ function renderLines(){
 function renderEv(){
  const p=cur(), tb=document.querySelector('#evT tbody');
  const list=[...p.events].sort((a,b)=>(+a.course||999)-(+b.course||999));
+ const types=e=>[...EVT,...(e.type==='PS'?[['PS','体調(旧)']]:[])];
+ const resCell=e=>e.type==='CT'?`<select data-e="res" aria-label="結果"><option value=""></option>${RES.map(v=>`<option ${e.res===v?'selected':''}>${v}</option>`).join('')}</select>`
+  :e.type==='TM'?`<select data-e="dir" aria-label="結果"><option value=""></option>${DIRS.map(([v,l])=>`<option value="${v}" ${e.dir===v?'selected':''}>${l}</option>`).join('')}</select>`:'<span class="hint">—</span>';
  tb.innerHTML=list.map(e=>`<tr data-id="${e.id}">
   <td style="width:60px"><input class="num" data-e="course" value="${esc(e.course||'')}" aria-label="コース"></td>
-  <td style="width:150px"><select data-e="type" aria-label="種別">${EVT.map(([k,l])=>`<option value="${k}" ${k===e.type?'selected':''}>${l}</option>`).join('')}</select></td>
-  <td><input data-e="text" value="${esc(e.text)}" placeholder="例 肝↓ PR / CEA↑ / 手指裂創 G2" aria-label="内容"></td>
-  <td style="width:120px;white-space:nowrap">${(e.type==='CT'?[['good','奏効'],['stable','不変'],['bad','増悪']]:[['good','良い'],['stable','ふつう'],['bad','悪い']]).map(([t,l])=>`<button class="facebtn" data-tone="${t}" aria-pressed="${e.tone===t}" aria-label="${l}" title="${l}"><svg width="22" height="22" viewBox="-11 -11 22 22">${face(t,0,0,9)}</svg></button>`).join('')}</td>
+  <td style="width:170px"><select data-e="type" aria-label="種別">${types(e).map(([k,l])=>`<option value="${k}" ${k===e.type?'selected':''}>${l}</option>`).join('')}</select></td>
+  <td style="width:80px">${resCell(e)}</td>
+  <td><input data-e="text" value="${esc(e.text)}" placeholder="例 肝↓ / CEA 25.3 / 手指裂創 G2 / OP" aria-label="メモ・数値"></td>
   <td><button class="btn sm danger" data-del aria-label="削除">×</button></td></tr>`).join('')
-  || `<tr><td colspan="5" class="empty">チャートでタップした顔はここに並びます。内容の文字や有害事象・投薬はここで追加します。</td></tr>`;
+  || `<tr><td colspan="5" class="empty">チャートの画像・TM・有害事象の行のマスをタップすると、ここに並びます。</td></tr>`;
  tb.querySelectorAll('tr[data-id]').forEach(tr=>{
   const e=p.events.find(x=>x.id===tr.dataset.id);
-  tr.querySelectorAll('[data-tone]').forEach(b=>b.onclick=()=>{e.tone=e.tone===b.dataset.tone?'':b.dataset.tone;delete p.sample;save();tr.querySelectorAll('[data-tone]').forEach(x=>x.setAttribute('aria-pressed',e.tone===x.dataset.tone));drawTL();});
-  tr.querySelectorAll('[data-e]').forEach(el=>el.addEventListener(el.tagName==='SELECT'?'change':'input',()=>{e[el.dataset.e]=el.value;delete p.sample;save();drawTL();if(el.dataset.e==='type')renderEv();}));
+  tr.querySelectorAll('[data-e]').forEach(el=>el.addEventListener(el.tagName==='SELECT'?'change':'input',()=>{e[el.dataset.e]=el.value;e.tone=toneOf(e);delete p.sample;save();drawTL();if(el.dataset.e==='type')renderEv();}));
   tr.querySelector('[data-del]').onclick=()=>{p.events=p.events.filter(x=>x.id!==e.id);save();renderEv();drawTL();};
  });
 }
@@ -329,16 +332,22 @@ function drawTL(){
  const xOf=c=>LW+c*unit; // c: 0始まりの左端
  const LH=24, BAND=22, top=22, gTop=top+BAND+4;
  const evTop=gTop+LANES.length*LH+16, EH=40;
- const evRows=ROWS.filter(([k])=>TAP.includes(k)||p.events.some(e=>rowOf(e.type)===k&&+e.course));
+ const evRows=ROWS;
  const tW=t=>[...String(t)].reduce((w,ch)=>w+(ch.charCodeAt(0)>255?11:6.6),0);
  /* 文字の配置:アイコンの右に置けるなら右、次のアイコンにかかるならアイコンの下に段を作って置く */
  const layouts=evRows.map(([k])=>{
-  const items=p.events.filter(e=>rowOf(e.type)===k&&+e.course).sort((a,b)=>a.course-b.course).map(e=>({e,x:xOf(+e.course-.5)}));
+  const by={};
+  p.events.forEach(e=>{ if(rowOf(e.type)!==k||!+e.course) return; (by[+e.course]=by[+e.course]||[]).push(e); });
+  const items=Object.keys(by).map(Number).sort((a,b)=>a-b).map(c=>{const evs=by[c];
+   const marks=k==='AE'?evs.filter(e=>e.type!=='EV'):evs.slice(-1);
+   const iw=k==='CT'?(marks.some(e=>e.res)?14:0):k==='TM'?(marks.some(e=>e.dir)?7:0):marks.length*8;
+   const te=evs.filter(e=>e.text);
+   return {c,x:xOf(c-.5),marks,iw,text:te.map(e=>e.text).join('・'),tone:te.length?(te.some(e=>e.type==='AE'||e.type==='AEH')?'bad':toneOf(te[0])):''};});
   const ends=[];
-  items.forEach((it,i)=>{ if(!it.e.text){it.lv=-1;return;} const w=tW(it.e.text), ex=it.x+12+w;
-   const hit=items.some((o,j)=>j>i&&o.x-12<ex);
-   if(!hit){it.lv=0;it.tx=it.x+12;return;}
-   let L=0; while(ends[L]!==undefined&&ends[L]>it.x-10) L++; ends[L]=it.x-10+w+6; it.lv=L+1; it.tx=it.x-10;});
+  items.forEach((it,i)=>{ if(!it.text){it.lv=-1;return;} const w=tW(it.text), sx=it.iw?it.x+it.iw+3:it.x-unit/2+3, ex=sx+w;
+   const hit=items.some((o,j)=>j>i&&o.x-Math.max(o.iw,unit/2-3)<ex);
+   if(!hit){it.lv=0;it.tx=sx;return;}
+   let L=0; while(ends[L]!==undefined&&ends[L]>it.x-unit/2) L++; ends[L]=it.x-unit/2+w+6; it.lv=L+1; it.tx=it.x-unit/2+2;});
   return {items,h:Math.max(EH,26+ends.length*14+6)};});
  const rowY=[]; let acc=evTop; layouts.forEach(l=>{rowY.push(acc);acc+=l.h;});
  const H=acc+8, W=LW+N*unit+12;
@@ -367,12 +376,14 @@ function drawTL(){
   s+=`<line x1="0" y1="${y+RH-2}" x2="${W}" y2="${y+RH-2}" stroke="var(--soft)"/>`;
   s+=`<text x="8" y="${y+16}" font-size="12" font-weight="700" fill="var(--ink)">${l}</text>`;
   if(TAP.includes(k)) for(let c=1;c<=N;c++) s+=`<rect class="tap" data-k="${k}" data-c="${c}" x="${xOf(c-1)}" y="${y}" width="${unit}" height="${RH-4}" fill="transparent"><title>${c}コース目</title></rect>`;
-  layouts[i].items.forEach(({e,x,lv,tx})=>{
-   const c=e.tone==='good'?'var(--good)':e.tone==='bad'?'var(--bad)':'var(--muted)';
-   if(k==='RX') s+=`<g transform="translate(${x},${y+11}) rotate(-35)"><rect x="-9" y="-4" width="18" height="8" rx="4" fill="#f7f0dc" stroke="#111" stroke-width="1.2"/><path d="M0 -4 h5 a4 4 0 0 1 0 8 h-5 z" fill="#3a7bd5" stroke="#111" stroke-width="1.2"/></g>`;
-   else if(k==='AE') s+=`<image href="${e.type==='AEH'?ICON.rx:ICON.ae}" x="${x-11}" y="${y}" width="22" height="24" preserveAspectRatio="xMidYMid meet"/>`;
-   else s+=face(e.tone,x,y+11,9);
-   if(lv>=0) s+=`<text x="${tx}" y="${lv===0?y+15:y+24+lv*14}" font-size="11" fill="${c}">${esc(e.text)}</text>`;});
+  layouts[i].items.forEach(it=>{const x=it.x, cy=y+12;
+   if(k==='CT'){const e=it.marks[0]; if(e&&e.res) s+=`<g pointer-events="none"><rect x="${x-14}" y="${cy-8}" width="28" height="16" rx="8" fill="${RES_COL[e.res]}"/><text x="${x}" y="${cy+4}" font-size="10.5" font-weight="700" text-anchor="middle" fill="#fff">${e.res}</text></g>`;}
+   else if(k==='TM'){const e=it.marks[0]; if(e&&e.dir){const col=e.dir==='down'?'var(--good)':e.dir==='up'?'var(--bad)':'var(--muted)'; s+=`<text x="${x}" y="${cy+6}" font-size="18" font-weight="700" text-anchor="middle" fill="${col}">${DIRS.find(d=>d[0]===e.dir)[1]}</text>`;}}
+   else it.marks.forEach((e,j)=>{const mx=x-it.iw+8+j*16;
+    if(e.type==='RX') s+=`<g pointer-events="none" transform="translate(${mx},${cy}) rotate(-35) scale(.85)"><rect x="-9" y="-4" width="18" height="8" rx="4" fill="#f7f0dc" stroke="#111" stroke-width="1.2"/><path d="M0 -4 h5 a4 4 0 0 1 0 8 h-5 z" fill="#3a7bd5" stroke="#111" stroke-width="1.2"/></g>`;
+    else s+=`<image pointer-events="none" href="${e.type==='AEH'?ICON.rx:ICON.ae}" x="${mx-8}" y="${cy-10}" width="16" height="20" preserveAspectRatio="xMidYMid meet"/>`;});
+   if(it.lv>=0){const col=it.tone==='good'?'var(--good)':it.tone==='bad'?'var(--bad)':'var(--muted)'; s+=`<text x="${it.tx}" y="${it.lv===0?y+16:y+24+it.lv*14}" font-size="11" fill="${col}">${esc(it.text)}</text>`;}
+  });
  });
  s+='</svg>'; box.innerHTML=s;
  bindChart(p);
@@ -402,6 +413,7 @@ function openDose(p,k,c){
  let left=rb.left-wb.left+wrap.scrollLeft+rb.width/2-118, topY=rb.bottom-wb.top+wrap.scrollTop+4;
  left=Math.max(wrap.scrollLeft+4,Math.min(left,wrap.scrollLeft+wrap.clientWidth-244));
  pop.style.left=left+'px'; pop.style.top=topY+'px';
+ if(topY+pop.offsetHeight>wrap.scrollHeight-4){ pop.style.top=Math.max(2,rb.top-wb.top+wrap.scrollTop-pop.offsetHeight-2)+'px'; }
  const range=()=>{const fwd=pop.querySelector('#dpFwd').checked, o=p.cells[k], out=[+c];
   if(fwd&&o[c]) for(let i=+c+1;o[i];i++) out.push(i); return out;};
  const done=()=>{delete p.sample; save(); closeDose(); drawTL(); renderLines();};
@@ -466,6 +478,45 @@ function addNote(p){
  p.notes.push(n); delete p.sample; save(); renderNotes(p,g);
  box.querySelector(`.sticky[data-id="${n.id}"] textarea`)?.focus();
 }
+/* ---------- 評価・有害事象のマス入力 ---------- */
+const CAPSULE_SVG='<svg width="18" height="12" viewBox="-10 -6 20 12" style="vertical-align:-1px" aria-hidden="true"><g transform="rotate(-35)"><rect x="-9" y="-4" width="18" height="8" rx="4" fill="#f7f0dc" stroke="#111" stroke-width="1.2"/><path d="M0 -4 h5 a4 4 0 0 1 0 8 h-5 z" fill="#3a7bd5" stroke="#111" stroke-width="1.2"/></g></svg>';
+function evAt(p,t,c){return p.events.find(e=>e.type===t&&+e.course===+c);}
+function openEvPop(p,k,c){
+ closeDose();
+ const r=document.querySelector(`rect.tap[data-k="${k}"][data-c="${c}"]`); if(!r) return;
+ const wrap=document.getElementById('tl'), wb=wrap.getBoundingClientRect(), rb=r.getBoundingClientRect();
+ const pop=document.createElement('div'); pop.className='dosepop'; pop.id='dosePop';
+ const title={CT:'画像',TM:'TM',AE:'有害事象・イベント'}[k];
+ let body='';
+ if(k==='CT'){const e=evAt(p,'CT',c);
+  body=`<div class="dp-q res">${RES.map(v=>`<button data-res="${v}" style="--rc:${RES_COL[v]}" aria-pressed="${!!(e&&e.res===v)}">${v}</button>`).join('')}</div>
+  <div class="dp-r"><input id="epTxt" maxlength="20" placeholder="メモ(任意 例 肝↓)" value="${esc(e?.text||'')}" aria-label="メモ"><button class="btn sm" id="epOk">決定</button></div>`;}
+ if(k==='TM'){const e=evAt(p,'TM',c);
+  body=`<div class="dp-q arr">${DIRS.map(([v,l])=>`<button data-dir="${v}" aria-pressed="${!!(e&&e.dir===v)}">${l}</button>`).join('')}</div>
+  <div class="dp-r"><input id="epTxt" maxlength="20" placeholder="数値(例 CEA 25.3)" value="${esc(e?.text||'')}" aria-label="数値"><button class="btn sm" id="epOk">決定</button></div>`;}
+ if(k==='AE'){const ev=evAt(p,'EV',c);
+  body=`<div class="dp-q tog">${[['AE',`<img src="${ICON.ae}" alt="">`,'消化器など'],['AEH',`<img src="${ICON.rx}" alt="">`,'血液'],['RX',CAPSULE_SVG,'投薬']].map(([t,ic,l])=>`<button data-tog="${t}" aria-pressed="${!!evAt(p,t,c)}">${ic}<span>${l}</span></button>`).join('')}</div>
+  <div class="dp-r"><input id="epTxt" maxlength="20" placeholder="自由記載(例 OP、入院)" value="${esc(ev?.text||'')}" aria-label="自由記載"><button class="btn sm" id="epOk">決定</button></div>`;}
+ pop.innerHTML=`<div class="dp-h">${title} ・ ${c}コース目</div>${body}<div class="dp-r"><button class="btn sm danger" id="epClr">このマスを消去</button></div>`;
+ wrap.appendChild(pop);
+ let left=rb.left-wb.left+wrap.scrollLeft+rb.width/2-118, topY=rb.bottom-wb.top+wrap.scrollTop+2;
+ left=Math.max(wrap.scrollLeft+4,Math.min(left,wrap.scrollLeft+wrap.clientWidth-244));
+ pop.style.left=left+'px'; pop.style.top=topY+'px';
+ if(topY+pop.offsetHeight>wrap.scrollHeight-4){ pop.style.top=Math.max(2,rb.top-wb.top+wrap.scrollTop-pop.offsetHeight-2)+'px'; }
+ const txt=()=>pop.querySelector('#epTxt').value.trim();
+ const upsert=(t,patch)=>{let e=evAt(p,t,c); if(!e){e={id:uid(),course:String(c),type:t,text:''};p.events.push(e);} Object.assign(e,patch); e.tone=toneOf(e); return e;};
+ const prune=()=>{p.events=p.events.filter(e=>!(+e.course===+c&&((e.type==='CT'&&!e.res&&!e.text)||(e.type==='TM'&&!e.dir&&!e.text)||(e.type==='EV'&&!e.text))));};
+ const done=(reopen)=>{prune();delete p.sample;save();closeDose();renderEv();drawTL();if(reopen)openEvPop(p,k,c);};
+ pop.querySelectorAll('[data-res]').forEach(b=>b.onclick=()=>{const cur0=evAt(p,'CT',c)?.res; upsert('CT',{res:cur0===b.dataset.res?'':b.dataset.res,text:txt()}); done();});
+ pop.querySelectorAll('[data-dir]').forEach(b=>b.onclick=()=>{const cur0=evAt(p,'TM',c)?.dir; upsert('TM',{dir:cur0===b.dataset.dir?'':b.dataset.dir,text:txt()}); done();});
+ pop.querySelectorAll('[data-tog]').forEach(b=>b.onclick=()=>{const t=b.dataset.tog, e=evAt(p,t,c);
+  if(e) p.events=p.events.filter(x=>x!==e); else upsert(t,{}); if(txt()) upsert('EV',{text:txt()}); done(true);});
+ const ok=()=>{ if(k==='CT') upsert('CT',{text:txt()}); else if(k==='TM') upsert('TM',{text:txt()}); else { if(txt()) upsert('EV',{text:txt()}); else p.events=p.events.filter(e=>!(e.type==='EV'&&+e.course===+c)); } done(); };
+ pop.querySelector('#epOk').onclick=ok;
+ pop.querySelector('#epTxt').onkeydown=e=>{if(e.key==='Enter') ok();};
+ pop.querySelector('#epClr').onclick=()=>{p.events=p.events.filter(e=>!(rowOf(e.type)===k&&+e.course===+c)); done();};
+ setTimeout(()=>document.addEventListener('pointerdown',outside,true),0);
+}
 function bindChart(p){
  const svg=document.getElementById('chartSvg'); if(!svg) return;
  let painting=null, moved=false, lpTimer=null, lastCell={};
@@ -496,13 +547,7 @@ function bindChart(p){
  const end=()=>{clearTimeout(lpTimer); if(painting===null) return; painting=null; save(); renderLines();
   if(maxCourse(p)+3>(svg.querySelectorAll('rect.cell').length/LANES.length)) drawTL();};
  svg.addEventListener('pointerup',end); svg.addEventListener('pointercancel',end);
- svg.querySelectorAll('rect.tap').forEach(r=>r.addEventListener('click',()=>{
-  const k=r.dataset.k, c=r.dataset.c, ev=p.events.find(e=>e.type===k&&String(+e.course)===c);
-  const order=['good','stable','bad'];
-  if(!ev) p.events.push({id:uid(),date:'',course:c,type:k,text:'',tone:'good'});
-  else{const i=order.indexOf(ev.tone); if(i<0) ev.tone='good'; else if(i<2) ev.tone=order[i+1]; else if(!ev.text&&!ev.date) p.events=p.events.filter(x=>x!==ev); else ev.tone='';}
-  delete p.sample; save(); renderEv(); drawTL();
- }));
+ svg.querySelectorAll('rect.tap').forEach(r=>r.addEventListener('click',()=>openEvPop(p,r.dataset.k,r.dataset.c)));
 }
 
 /* ---------- io ---------- */
